@@ -133,3 +133,4 @@ Round-robin antar provider untuk model yang sama = v2 (bukan v1).
    public key diberikan ke user untuk dipasang di repo Settings → Deploy
    keys (Allow write access). Key jhon7z TIDAK dihapus dulu (dipakai repo
    lain juga) — hapusnya setelah push ini berhasil.
+   UPDATE 2026-10-28: deploy key dipasang user, push BERHASIL (main live).
