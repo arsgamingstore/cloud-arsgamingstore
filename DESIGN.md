@@ -128,5 +128,8 @@ Round-robin antar provider untuk model yang sama = v2 (bukan v1).
 2. ~~Konfirmasi desain~~ DISETUJUI user 2026-10-28 ("okee gaskeunn").
 3. Subdomain: ditunda (sudah disepakati).
 4. Push dari VM DITOLAK 2026-10-28: SSH key di VM = jhon7z, tanpa akses
-   tulis ke repo org arsgamingstore. Butuh user push dari PC-nya, atau
-   tambah jhon7z sebagai collaborator di repo ini lalu assistant push ulang.
+   tulis ke repo org arsgamingstore. JALUR BARU (disetujui user 2026-10-28):
+   deploy key khusus repo — keypair `~/.ssh/id_cloud_ars` dibuat di VM,
+   public key diberikan ke user untuk dipasang di repo Settings → Deploy
+   keys (Allow write access). Key jhon7z TIDAK dihapus dulu (dipakai repo
+   lain juga) — hapusnya setelah push ini berhasil.
