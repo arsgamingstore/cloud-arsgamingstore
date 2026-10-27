@@ -1,0 +1,11 @@
+# Cloudflare Pages project: cloud-arsgamingstore
+name = "cloud-arsgamingstore"
+compatibility_date = "2026-10-01"
+pages_build_output = "public"
+
+# KV binding GATEWAY_KV SENGAJA tidak ditulis di sini.
+# Alasan: wrangler.toml dengan ID namespace placeholder membuat deploy
+# GAGAL (Cloudflare error 10042) — pelajaran dari GatewayARS.
+# Cara yang benar: buat KV namespace di dashboard Cloudflare, lalu bind
+# sebagai GATEWAY_KV di Pages -> Settings -> Functions -> KV namespace
+# bindings. Tanpa binding itu, gateway menolak melayani (fail closed, 503).
