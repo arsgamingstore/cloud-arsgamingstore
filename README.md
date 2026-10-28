@@ -1,9 +1,12 @@
-# cloud-arsgamingstore
+# ArsRouter Proxy (cloud-arsgamingstore)
 
 Gateway AI Workers-native: satu endpoint OpenAI-compatible di depan banyak
 provider, di-deploy di Cloudflare Pages. Ditulis ulang untuk model Workers —
 **bukan** port 9router-pro (9router-pro mentah tidak bisa jalan di
 Pages/Workers: Next.js 16 + SQLite lokal via native addon + custom server).
+
+Nama website: **ArsRouter Proxy**. Logo: `public/logo.gif` (varian ringan
+dari logo animasi, 320×180, 12fps).
 
 ## Fitur v1
 
