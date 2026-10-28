@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>cloud-arsgamingstore — Dashboard</title>
+<title>ArsRouter Proxy — Dashboard</title>
 <style>
   :root {
     --bg: #070812;
@@ -33,6 +33,15 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand h1 { margin: 0; }
+  .logo {
+    height: 64px;
+    width: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, .35);
   }
   h2 {
     font-size: 17px;
@@ -131,7 +140,7 @@
 </style>
 </head>
 <body>
-<h1>cloud-arsgamingstore</h1>
+<div class="brand"><img src="/logo.gif" alt="ArsRouter Proxy" class="logo"><h1>ArsRouter Proxy</h1></div>
 <p>Gateway AI Workers-native: satu endpoint OpenAI-compatible di depan banyak provider.</p>
 
 <div id="health" class="card">Memuat status…</div>
