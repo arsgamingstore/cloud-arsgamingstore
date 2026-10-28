@@ -5,8 +5,8 @@ provider, di-deploy di Cloudflare Pages. Ditulis ulang untuk model Workers —
 **bukan** port 9router-pro (9router-pro mentah tidak bisa jalan di
 Pages/Workers: Next.js 16 + SQLite lokal via native addon + custom server).
 
-Nama website: **ArsRouter Proxy**. Logo: `public/logo.gif` (varian ringan
-dari logo animasi, 320×180, 12fps).
+Nama website: **ArsRouter Proxy**. Logo: `public/logo.mp4` (video logo,
+480×270, 474KB — lebih ringan dan lebih tajam dari GIF).
 
 ## Fitur v1
 

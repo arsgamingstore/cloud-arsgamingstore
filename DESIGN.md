@@ -135,5 +135,6 @@ Round-robin antar provider untuk model yang sama = v2 (bukan v1).
    lain juga) — hapusnya setelah push ini berhasil.
    UPDATE 2026-10-28: deploy key dipasang user, push BERHASIL (main live).
 5. Branding (2026-10-28): nama website = ArsRouter Proxy (nama repo tetap
-   cloud-arsgamingstore). Logo dashboard = public/logo.gif (varian ringan
-   320×180, 12fps, 2,3MB); GIF 480px tetap di your_files.
+   cloud-arsgamingstore). Logo dashboard = public/logo.mp4 (video 480×270,
+   474KB; GIF dipensiunkan dari site karena ~5× lebih berat, file GIF
+   tetap tersimpan di your_files).
