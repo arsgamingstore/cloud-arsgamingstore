@@ -48,33 +48,37 @@ menyediakan model yang sama (maksimal 2x percobaan per request, lalu 502).
 
 ## 4. Provider (dikonfigurasi lewat env, bukan dashboard di v1)
 
-Provider v1 (dikonfirmasi dari gonkarouter.io, 2026-10-28):
+Provider v1 (diganti 2026-10-28 dari GonkaRouter ke River, atas permintaan
+user; dikonfirmasi dari docs.river.ai):
 
-- **GonkaRouter** — "AI Model Router on the Gonka Network", satu API untuk
-  banyak model, OpenAI-compatible (contoh resmi memakai OpenAI SDK).
-- Base URL: `https://api.gonkarouter.io/v1`, auth Bearer key.
-- Contoh model dari homepage: `zai-org/GLM-5.3-Flash` (262k context,
-  function calling ready). Daftar model lengkap via env (lihat bawah),
-  karena endpoint `/v1/models` GonkaRouter menjawab 401 tanpa key dengan
-  error `unauthorized / missing Authorization or x-api-key header` —
-  katalog model TIDAK publik dan provider menerima header `Authorization`
-  Bearer atau `x-api-key`, jadi gateway tidak bisa passthrough
-  katalog tanpa key.
-- Harga referensi dari homepage: user baru dapat 10M token gratis,
-  mulai $0.0045 per 1M token (biaya pemakaian tetap ditanggung akun
-  GonkaRouter user, bukan gateway).
+- **River** — "Your own frontier AI lab. In one API." Perusahaan
+  River AI Inc. (CEO Igor Babuschkin, ex-xAI/DeepMind; pendanaan
+  $1,1 miliar). Sisi inference-nya OpenAI-compatible.
+- Base URL: `https://api.river.ai/v1`, auth Bearer key (key dibuat di
+  River Console, console.river.ai).
+- Endpoint: `POST /v1/chat/completions` (chat, images, tools,
+  streaming), `POST /v1/responses`, `GET /v1/models`. Format respons
+  sama dengan OpenAI (choices + usage) — gateway tidak butuh perubahan
+  kode untuk pindah provider ini.
+- Contoh model dari docs: `deepseek-ai/DeepSeek-V4.1-Flash`. Daftar
+  model lengkap via env (lihat bawah); user mengisi dari halaman
+  Models di docs River.
+- Catatan: provider lama GonkaRouter (base URL
+  `https://api.gonkarouter.io/v1`) sudah tidak dipakai project ini;
+  file key GonkaRouter yang diupload user tetap tidak dibaca dan
+  tidak dipakai.
 
 Satu provider = satu grup env di Pages (Secrets, nilainya tidak pernah masuk
 repo atau chat):
 
-- `PROVIDER_<N>_NAME` — nama tampil (v1: `gonkarouter`).
+- `PROVIDER_<N>_NAME` — nama tampil (v1: `river`).
 - `PROVIDER_<N>_BASE_URL` — base URL OpenAI-compatible provider itu
-  (v1: `https://api.gonkarouter.io/v1`).
-- `PROVIDER_<N>_API_KEY` — secret (Pages Secrets; nilai key dari file
-  yang diupload user TIDAK dibaca — user memasukkannya sendiri ke
-  Pages Secrets saat deploy).
+  (v1: `https://api.river.ai/v1`).
+- `PROVIDER_<N>_API_KEY` — secret (Pages Secrets; nilai key TIDAK
+  dibaca dari file — user memasukkannya sendiri ke Pages Secrets
+  saat deploy).
 - `PROVIDER_<N>_MODELS` — daftar model yang disediakan, dipisah koma
-  (diisi user dari katalog GonkaRouter-nya).
+  (diisi user dari halaman Models docs River).
 
 Routing v1: model yang diminta dicari di provider yang aktif; kalau provider
 utama gagal, failover ke provider lain yang menyediakan model yang sama.
@@ -138,3 +142,7 @@ Round-robin antar provider untuk model yang sama = v2 (bukan v1).
    cloud-arsgamingstore). Logo dashboard = public/logo.mp4 (video 480×270,
    474KB; GIF dipensiunkan dari site karena ~5× lebih berat, file GIF
    tetap tersimpan di your_files).
+6. Provider diganti (2026-10-28): GonkaRouter → River (docs.river.ai,
+   OpenAI-compatible, base URL https://api.river.ai/v1). Perubahan
+   config-only (tanpa perubahan kode); secrets River + redeploy masih
+   menunggu user (bersama perbaikan build output + KV + ADMIN_KEY).

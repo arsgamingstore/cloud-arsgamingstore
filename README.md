@@ -39,12 +39,13 @@ Nama website: **ArsRouter Proxy**. Logo: `public/logo.mp4` (video logo,
 3. Isi Secrets & Variables (Pages → Settings → Environment variables,
    tandai sebagai Secret untuk yang sensitif):
    - `ADMIN_KEY` — kunci admin dashboard (buat yang panjang & acak).
-   - `PROVIDER_1_NAME` = `gonkarouter`
-   - `PROVIDER_1_BASE_URL` = `https://api.gonkarouter.io/v1`
-   - `PROVIDER_1_API_KEY` = key GonkaRouter (secret — jangan pernah
-     di-commit, jangan lewat chat).
+   - `PROVIDER_1_NAME` = `river`
+   - `PROVIDER_1_BASE_URL` = `https://api.river.ai/v1`
+   - `PROVIDER_1_API_KEY` = key River dari console.river.ai (secret —
+     jangan pernah di-commit, jangan lewat chat).
    - `PROVIDER_1_MODELS` = daftar model dipisah koma, mis.
-     `zai-org/GLM-5.3-Flash` (lihat katalog akun GonkaRouter).
+     `deepseek-ai/DeepSeek-V4.1-Flash` (lihat halaman Models di docs River
+     untuk ID lengkap).
    - Provider ke-2 dst: ulangi pola `PROVIDER_2_*`, `PROVIDER_3_*`, …
 4. Redeploy (Deployments → Retry deployment) setelah KV + secrets diisi.
 5. Buka dashboard di URL Pages, login pakai `ADMIN_KEY`, buat gateway key,
@@ -59,7 +60,7 @@ belakangan di Pages → Custom domains — keputusan user: nanti setelah jadi.
 from openai import OpenAI
 client = OpenAI(api_key="<GATEWAY_KEY>", base_url="https://<pages-url>/v1")
 resp = client.chat.completions.create(
-    model="zai-org/GLM-5.3-Flash",
+    model="deepseek-ai/DeepSeek-V4.1-Flash",
     messages=[{"role": "user", "content": "Halo!"}],
 )
 ```
