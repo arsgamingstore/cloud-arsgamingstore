@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ArsRouter Proxy — Admin</title>
+<style>
+  :root {
+    --bg: #070812;
+    --glass: rgba(255, 255, 255, .06);
+    --border: rgba(255, 255, 255, .12);
+    --text: #eef1ff;
+    --muted: #9aa3c7;
+    --violet: #8b7bff;
+    --cyan: #22d3ee;
+  }
+  body {
+    font-family: system-ui, sans-serif;
+    color: var(--text);
+    margin: 0;
+    padding: 24px;
+    background:
+      radial-gradient(600px 400px at 15% -5%, rgba(139, 123, 255, .28), transparent 60%),
+      radial-gradient(700px 500px at 90% 10%, rgba(34, 211, 238, .16), transparent 60%),
+      radial-gradient(500px 500px at 50% 110%, rgba(139, 123, 255, .12), transparent 60%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+  h1 {
+    font-size: 26px;
+    letter-spacing: .01em;
+    background: linear-gradient(90deg, #c4b5fd, #67e8f9);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand h1 { margin: 0; }
+  .logo {
+    height: 64px;
+    width: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, .35);
+  }
+  h2 {
+    font-size: 17px;
+    margin-top: 32px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+  }
+  a { color: #a5b4fc; }
+  .card {
+    background: linear-gradient(160deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .03));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    margin-top: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, .35);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    animation: fadeUp .5s ease both;
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(167, 139, 250, .5);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .45), 0 0 24px rgba(139, 123, 255, .15);
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  input, button {
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, .05);
+    color: var(--text);
+    transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease, filter .2s ease;
+  }
+  input:focus {
+    outline: none;
+    border-color: var(--violet);
+    box-shadow: 0 0 0 3px rgba(139, 123, 255, .25);
+  }
+  button {
+    background: linear-gradient(135deg, #7c6bff, #22a3ee);
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(124, 107, 255, .35);
+  }
+  button:hover { transform: translateY(-1px); filter: brightness(1.1); }
+  button:active { transform: translateY(0) scale(.98); }
+  button.danger { background: linear-gradient(135deg, #f43f5e, #ef4444); box-shadow: 0 4px 20px rgba(244, 63, 94, .35); }
+  button:disabled { opacity: .5; cursor: default; transform: none; }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  th { color: var(--muted); font-size: 12px; letter-spacing: .05em; text-transform: uppercase; }
+  tbody tr { transition: background .2s ease; }
+  tbody tr:hover { background: rgba(255, 255, 255, .04); }
+  code {
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 6px;
+    word-break: break-all;
+  }
+  .mono { font-family: ui-monospace, monospace; }
+  .warn {
+    background: rgba(245, 158, 11, .12);
+    border: 1px solid rgba(245, 158, 11, .4);
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 12px;
+    font-size: 14px;
+  }
+  .ok { color: #4ade80; } .bad { color: #fb7185; }
+  textarea {
+    width: 100%;
+    min-height: 70px;
+    font-size: 14px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, .05);
+    color: var(--text);
+    box-sizing: border-box;
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+  textarea:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 3px rgba(139, 123, 255, .25); }
+  #chatOut { white-space: pre-wrap; }
+  @media (prefers-reduced-motion: reduce) {
+    .card { animation: none; transition: none; }
+    button, input, textarea { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="brand"><video src="/logo.mp4" autoplay loop muted playsinline class="logo" aria-label="ArsRouter Proxy"></video><h1>ArsRouter Proxy — Admin</h1></div>
+<p><a href="/">← Kembali ke beranda</a></p>
+<p>Panel admin. Halaman ini tidak di-link dari landing — yang menjaga tetap <code>ADMIN_KEY</code>.</p>
+
+<div id="health" class="card">Memuat status…</div>
+
+<h2>Login admin</h2>
+<div class="card">
+  <p>Masukkan <code>ADMIN_KEY</code> (disimpan hanya di sessionStorage tab ini, hilang saat tab ditutup).</p>
+  <input id="adminKey" type="password" placeholder="ADMIN_KEY" size="40">
+  <button id="loginBtn">Login</button>
+  <button id="logoutBtn">Logout</button>
+  <span id="loginState"></span>
+</div>
+
+<div id="adminArea" style="display:none">
+  <h2>API key gateway</h2>
+  <div class="card">
+    <input id="keyName" placeholder="Nama key (mis. main)" size="24">
+    <input id="keyQuota" type="number" placeholder="Kuota token/bulan" value="1000000" min="1" style="width:170px">
+    <button id="createKeyBtn">Buat key</button>
+    <div id="newKey" style="margin-top:10px"></div>
+  </div>
+  <div class="card">
+    <table>
+      <thead><tr><th>Nama</th><th>ID</th><th>Pakai / Kuota</th><th>Periode</th><th>Tipe</th><th></th></tr></thead>
+      <tbody id="keysBody"></tbody>
+    </table>
+    <p id="totals"></p>
+  </div>
+
+  <h2>Provider</h2>
+  <div class="card" id="providers"></div>
+
+  <h2>Tes chat (pakai gateway key, bukan admin key)</h2>
+  <div class="card">
+    <input id="gwKey" placeholder="Gateway key (ca-…)" size="40">
+    <input id="chatModel" placeholder="Model (mis. zai-org/GLM-5.3-Flash)" size="34">
+    <textarea id="chatMsg" placeholder="Pesan…">Halo, jawab singkat: apa itu ArsRouter Proxy?</textarea>
+    <p><button id="chatBtn">Kirim</button></p>
+    <div id="chatOut" class="mono"></div>
+  </div>
+</div>
+
+<div class="warn"><b>Keamanan:</b> key provider tidak pernah tampil di dashboard ini.
+Key provider hanya ada di Pages Secrets. Key gateway mentah hanya ditampilkan sekali saat dibuat — simpan baik-baik.</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const adminHeaders = () => ({ "Authorization": "Bearer " + (sessionStorage.getItem("ca_admin") || ""), "Content-Type": "application/json" });
+
+async function loadHealth() {
+  try {
+    const r = await fetch("/api/health");
+    const h = await r.json();
+    $("health").innerHTML =
+      `Status: <b class="ok">${h.status}</b> · KV: ${h.kv_bound ? '<span class="ok">terhubung</span>' : '<span class="bad">BELUM di-bind</span>'} · ` +
+      `Admin: ${h.admin_configured ? '<span class="ok">terkonfigurasi</span>' : '<span class="bad">ADMIN_KEY belum diset</span>'} · ` +
+      `Provider: ${h.providers} · Model: ${h.models}` +
+      (h.kv_bound ? "" : "<p>Bind KV namespace sebagai <code>GATEWAY_KV</code> di Pages → Settings → Functions → KV namespace bindings, lalu redeploy.</p>");
+  } catch (e) {
+    $("health").innerHTML = '<span class="bad">Gagal memuat /api/health: ' + e.message + "</span>";
+  }
+}
+
+function refreshLoginState() {
+  const has = !!sessionStorage.getItem("ca_admin");
+  $("loginState").textContent = has ? "Login sebagai admin." : "Belum login.";
+  $("adminArea").style.display = has ? "block" : "none";
+  if (has) loadUsage();
+}
+
+async function loadUsage() {
+  try {
+    const r = await fetch("/api/admin/usage", { headers: adminHeaders() });
+    const u = await r.json();
+    if (!r.ok) { $("keysBody").innerHTML = `<tr><td colspan="6">${u.error?.message || r.status}</td></tr>`; return; }
+    $("keysBody").innerHTML = u.keys.map(k => `<tr>
+      <td>${k.name}</td><td class="mono">${k.id}</td>
+      <td>${k.used_tokens.toLocaleString()} / ${k.quota_tokens.toLocaleString()}</td>
+      <td>${k.period}</td>
+      <td>${k.quota_type === "package" ? "Paket" : "Bulanan"}${k.has_upstream ? " · hybrid" : ""}</td>
+      <td><button class="danger" data-del="${k.id}">Hapus</button></td></tr>`).join("") || '<tr><td colspan="6">Belum ada key.</td></tr>';
+    document.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
+      if (!confirm("Hapus key ini? Key yang sudah dihapus tidak bisa dipakai lagi.")) return;
+      await fetch("/api/admin/keys/" + b.dataset.del, { method: "DELETE", headers: adminHeaders() });
+      loadUsage();
+    });
+    $("totals").textContent = `Total: ${u.totals.keys} key · ${u.totals.used_tokens.toLocaleString()} / ${u.totals.quota_tokens.toLocaleString()} token.`;
+    $("providers").innerHTML = u.providers.length
+      ? u.providers.map(p => `<p>${p.name}: ${p.models} model</p>`).join("")
+      : "<p>Belum ada provider terkonfigurasi. Set PROVIDER_1_* di Pages Secrets.</p>";
+  } catch (e) {
+    $("keysBody").innerHTML = `<tr><td colspan="6">Error: ${e.message}</td></tr>`;
+  }
+}
+
+$("loginBtn").onclick = () => {
+  const v = $("adminKey").value.trim();
+  if (!v) return;
+  sessionStorage.setItem("ca_admin", v);
+  $("adminKey").value = "";
+  refreshLoginState();
+};
+$("logoutBtn").onclick = () => { sessionStorage.removeItem("ca_admin"); refreshLoginState(); };
+
+$("createKeyBtn").onclick = async () => {
+  const name = $("keyName").value.trim();
+  const quota = parseInt($("keyQuota").value, 10);
+  if (!name) { alert("Isi nama key dulu."); return; }
+  const r = await fetch("/api/admin/keys", { method: "POST", headers: adminHeaders(), body: JSON.stringify({ name, quota_tokens: quota }) });
+  const d = await r.json();
+  if (!r.ok) { $("newKey").innerHTML = '<span class="bad">' + (d.error?.message || r.status) + "</span>"; return; }
+  $("newKey").innerHTML = 'Key baru (hanya tampil sekali, simpan sekarang): <code>' + d.key + "</code>";
+  $("keyName").value = "";
+  loadUsage();
+};
+
+$("chatBtn").onclick = async () => {
+  const key = $("gwKey").value.trim();
+  const model = $("chatModel").value.trim();
+  const msg = $("chatMsg").value.trim();
+  if (!key || !model || !msg) { alert("Isi gateway key, model, dan pesan."); return; }
+  $("chatOut").textContent = "Mengirim…";
+  try {
+    const r = await fetch("/v1/chat/completions", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
+      body: JSON.stringify({ model, messages: [{ role: "user", content: msg }] }),
+    });
+    const d = await r.json();
+    $("chatOut").textContent = r.ok
+      ? (d.choices?.[0]?.message?.content || JSON.stringify(d, null, 2)) + "\n\nUsage: " + JSON.stringify(d.usage || {})
+      : "Error " + r.status + ": " + JSON.stringify(d, null, 2);
+  } catch (e) {
+    $("chatOut").textContent = "Error: " + e.message;
+  }
+};
+
+loadHealth();
+refreshLoginState();
+</script>
+</body>
+</html>

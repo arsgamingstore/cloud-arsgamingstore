@@ -12,19 +12,24 @@ Nama website: **ArsRouter Proxy**. Logo: `public/logo.mp4` (video logo,
 
 - `POST /v1/chat/completions` — OpenAI-compatible, dukung streaming (SSE),
   auth Bearer gateway key, failover antar provider (5xx/429/error jaringan).
-- `GET /v1/models` — katalog model gabungan dari env (tanpa auth).
+- `GET /v1/models` — katalog model (tanpa auth = model provider env;
+  dengan key hybrid = model upstream key itu, `owned_by` disamarkan).
 - `GET /api/health` — status (tanpa auth, tanpa secret).
-- Dashboard web (`/`) — login admin, kelola gateway key, lihat pemakaian
-  vs kuota per key per bulan, status provider, panel tes chat.
-- Kuota per key per bulan kalender (token prompt + completion dari respons
-  provider), disimpan di KV. Kuota habis → 429.
+- Landing publik (`/`) — daftar model (Uncensored + Standar) + cara
+  pakai, tanpa panel admin.
+- Panel admin (`/admin/`) — login admin, kelola gateway key, lihat
+  pemakaian vs kuota per key, status provider, panel tes chat. Panel
+  admin tidak di-link dari landing.
+- Kuota per key: bulanan (reset tiap bulan kalender) atau paket
+  (sekali pakai, tanpa reset — key dari bot). Kuota habis → 429.
 
 ## Struktur
 
 - `functions/lib/gateway.js` — seluruh logika (tanpa dependensi).
 - `functions/v1/chat/completions.js`, `functions/v1/models.js` — endpoint publik.
 - `functions/api/health.js`, `functions/api/admin/*` — health + admin.
-- `public/index.html` — dashboard (HTML/JS vanilla, tanpa build).
+- `public/index.html` — landing publik; `public/admin/index.html` —
+  panel admin (HTML/JS vanilla, tanpa build).
 - `test/gateway.test.mjs` — tes logika (Node 24, tanpa wrangler).
 - `DESIGN.md` — desain + keputusan yang dicoret di v1.
 
@@ -48,7 +53,7 @@ Nama website: **ArsRouter Proxy**. Logo: `public/logo.mp4` (video logo,
      untuk ID lengkap).
    - Provider ke-2 dst: ulangi pola `PROVIDER_2_*`, `PROVIDER_3_*`, …
 4. Redeploy (Deployments → Retry deployment) setelah KV + secrets diisi.
-5. Buka dashboard di URL Pages, login pakai `ADMIN_KEY`, buat gateway key,
+5. Buka panel admin di URL Pages + `/admin/`, login pakai `ADMIN_KEY`, buat gateway key,
    lalu pakai key itu sebagai Bearer token ke `/v1/chat/completions`.
 
 Subdomain custom (mis. `gateway.arsgaming.web.id` atau yang lain) diatur
