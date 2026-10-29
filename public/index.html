@@ -79,6 +79,7 @@
   .stats .cell:first-child { border-left: none; padding-left: 0; }
   .stats .cell small { display: block; font-size: 11px; letter-spacing: .08em; color: var(--muted); }
   .stats .cell b { display: block; font-size: 26px; color: var(--text); margin-top: 4px; }
+  .stats .cell b.floor { font-size: 20px; }
   .mrow { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); font-family: ui-monospace, monospace; font-size: 14px; }
   .pill { font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; color: var(--lime); border: 1px solid rgba(163, 230, 53, .5); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
   footer { border-top: 1px solid var(--border); margin-top: 48px; padding: 24px 0 8px; display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; align-items: baseline; }
@@ -158,7 +159,7 @@
 <p class="hero-sub">Satu endpoint OpenAI-compatible, order lewat bot models uncensored.</p>
 <div class="card mono term"><span class="lm">$</span> curl https://cloud-arsgamingstore.pages.dev/v1/chat/completions -H "Authorization: Bearer ars-…"</div>
 <div class="stats">
-  <span class="cell"><small>PRICE FLOOR</small><b>$0.040/1M token</b></span>
+  <span class="cell"><small>PRICE FLOOR</small><b class="floor">$0.040/1M token</b></span>
   <span class="cell"><small>MODEL STANDAR</small><b id="statModels">–</b></span>
   <span class="cell"><small>MODEL UNCENSORED</small><b>2</b></span>
 </div>
