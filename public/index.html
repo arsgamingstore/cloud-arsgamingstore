@@ -106,6 +106,7 @@
   .nav-links { display: flex; gap: 18px; }
   .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; white-space: nowrap; }
   .nav-links a:hover { color: var(--text); }
+  .nav-links a.active { color: var(--text); font-weight: 600; }
   .nav-cta {
     background: linear-gradient(135deg, #38bdf8, #2563eb); color: #fff;
     text-decoration: none; font-size: 13px; font-weight: 600;
@@ -115,12 +116,12 @@
   .b-short { display: none; }
   h2 { scroll-margin-top: 80px; }
   @media (max-width: 560px) {
-    .navbar { gap: 12px; padding: 8px 12px; }
+    .navbar { gap: 12px; padding: 8px 12px; overflow-x: auto; scrollbar-width: none; }
+    .navbar::-webkit-scrollbar { display: none; }
     .nav-links { gap: 10px; }
     .nav-links a { font-size: 13px; }
     .b-full { display: none; }
     .b-short { display: inline; }
-    .hide-m { display: none; }
   }
   @media (prefers-reduced-motion: reduce) {
     .card { animation: none; transition: none; }
@@ -134,17 +135,18 @@
      Admin tinggal di /admin/ dan tidak di-link dari halaman ini.
      Navbar di bawah juga tidak punya tombol Login / ikon search. -->
 <nav class="navbar">
-  <a class="nav-brand" href="#top"><span class="b-full">ArsRouter Proxy</span><span class="b-short">ArsRouter</span></a>
+  <a class="nav-brand" href="#top" data-view="all"><span class="b-full">ArsRouter Proxy</span><span class="b-short">ArsRouter</span></a>
   <span class="nav-links">
-    <a href="#uncen">Uncen</a>
-    <a href="#standar">Standar</a>
-    <a href="#cara" class="hide-m">Cara Pakai</a>
+    <a href="#uncen" data-view="uncen">Uncen</a>
+    <a href="#standar" data-view="standar">Standar</a>
+    <a href="#cara" data-view="cara"><span class="b-full">Cara Pakai</span><span class="b-short">Cara</span></a>
   </span>
   <a class="nav-cta" href="https://t.me/ArsapikeyBot"><span class="b-full">Beli via Bot</span><span class="b-short">Beli</span></a>
 </nav>
 <div class="brand" id="top"><video src="/logo.mp4" autoplay loop muted playsinline class="logo" aria-label="ArsRouter Proxy"></video><h1>ArsRouter Proxy</h1></div>
 <p>Gateway AI Workers-native: satu endpoint OpenAI-compatible di depan banyak provider.</p>
 
+<div id="view-uncen">
 <h2 id="uncen">Model Uncensored</h2>
 <p>Model tanpa sensor, dijual lewat bot Telegram. Key-nya key <code>ca-…</code> dari gateway ini.</p>
 <!-- Daftar ini HARUS sama dengan HYBRID_MODELS di ars-reseller-bot/src/lib/bot.js.
@@ -152,18 +154,23 @@
 <div class="card mono">deepseek-v4.1-flash-uncensored</div>
 <div class="card mono">glm-5.3-flash-uncensored</div>
 <p><a href="https://t.me/ArsapikeyBot">Beli via @ArsapikeyBot →</a></p>
+</div>
 
+<div id="view-standar">
 <h2 id="standar">Model Standar</h2>
 <p>Model standar lewat provider gateway. Daftar di bawah diambil live dari gateway.</p>
 <div id="stdModels">Memuat daftar model…</div>
 <p>Key standar dibuat admin — hubungi <a href="https://t.me/arsgamingstore">@arsgamingstore</a>.</p>
+</div>
 
+<div id="view-cara">
 <h2 id="cara">Cara pakai</h2>
 <div class="card">
   <p>1. Dapat key (<code>ca-…</code>) dari bot atau admin.<br>
   2. Arahkan client OpenAI-compatible kamu ke Base URL ini:<br>
   <code>https://cloud-arsgamingstore.pages.dev/v1</code><br>
   3. Pilih model dari daftar di atas, kirim chat seperti biasa.</p>
+</div>
 </div>
 
 <script>
@@ -182,6 +189,23 @@ async function loadModels() {
   }
 }
 loadModels();
+// Navbar jadi pemindah tampilan (seperti dashboard): klik section tampil
+// sendiri, sisanya sembunyi; klik brand tampilkan semua lagi + ke atas.
+// Tanpa JS, href anchor tetap jalan (scroll ke section).
+const LAND_VIEWS = ["uncen", "standar", "cara"];
+function showLandingView(view) {
+  LAND_VIEWS.forEach((v) => {
+    const el = document.getElementById("view-" + v);
+    if (el) el.style.display = (view === "all" || v === view) ? "block" : "none";
+  });
+  document.querySelectorAll(".nav-links a[data-view]").forEach((a) => {
+    a.classList.toggle("active", a.dataset.view === view);
+  });
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll(".navbar a[data-view]").forEach((a) => {
+  a.addEventListener("click", (e) => { e.preventDefault(); showLandingView(a.dataset.view); });
+});
 </script>
 </body>
 </html>
