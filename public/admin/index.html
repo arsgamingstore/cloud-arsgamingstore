@@ -181,6 +181,43 @@
   .login-ghost { background: transparent; border: 1px solid var(--border); box-shadow: none; }
   #loginState { font-size: 13px; color: var(--muted); }
   .login-note { color: var(--muted); font-size: 12px; margin: 16px 0 0; }
+  /* Dashboard pasca-login ala Dashboard V10 (rekreasi CSS vanilla):
+     sidebar + kartu statistik + donut pemakaian. Semua angka dari API
+     gateway sendiri — tanpa grafik garis, karena gateway tidak menyimpan
+     histori pemakaian per waktu (grafik akan jadi angka palsu). */
+  .dash { display: grid; grid-template-columns: 210px 1fr; gap: 16px; margin-top: 24px; align-items: start; }
+  .side {
+    position: sticky; top: 16px;
+    background: linear-gradient(160deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .03));
+    border: 1px solid var(--border); border-radius: 16px; padding: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, .35);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  }
+  .side-brand { font-weight: 700; font-size: 15px; }
+  .side-tag { color: var(--muted); font-size: 12px; margin: 2px 0 14px; }
+  .side nav a { display: block; color: var(--text); text-decoration: none; padding: 9px 12px; border-radius: 10px; font-size: 14px; }
+  .side nav a:hover { background: rgba(255, 255, 255, .07); }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .stat {
+    background: linear-gradient(160deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .03));
+    border: 1px solid var(--border); border-radius: 16px; padding: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, .35);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  }
+  .stat b { display: block; font-size: 22px; margin: 4px 0; word-break: break-all; }
+  .stat span { color: var(--muted); font-size: 12px; letter-spacing: .05em; text-transform: uppercase; }
+  .stat small { color: var(--muted); font-size: 12px; }
+  .donut-wrap { display: flex; align-items: center; gap: 16px; }
+  .donut-wrap svg { flex: none; transform: rotate(-90deg); }
+  .ubar { height: 6px; background: rgba(255, 255, 255, .08); border-radius: 99px; margin-top: 6px; overflow: hidden; }
+  .ubar i { display: block; height: 100%; background: linear-gradient(90deg, #38bdf8, #2563eb); border-radius: 99px; }
+  @media (max-width: 820px) {
+    .dash { grid-template-columns: 1fr; }
+    .side { position: static; }
+    .side nav { display: flex; gap: 8px; overflow-x: auto; }
+    .side nav a { white-space: nowrap; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+  }
   @media (prefers-reduced-motion: reduce) {
     .card { animation: none; transition: none; }
     button, input, textarea { transition: none; }
@@ -210,32 +247,72 @@
 </div>
 
 <div id="adminArea" style="display:none">
-  <h2>API key gateway</h2>
-  <div class="card">
-    <input id="keyName" placeholder="Nama key (mis. main)" size="24">
-    <input id="keyQuota" type="number" placeholder="Kuota token/bulan" value="1000000" min="1" style="width:170px">
-    <button id="createKeyBtn">Buat key</button>
-    <div id="newKey" style="margin-top:10px"></div>
-  </div>
-  <div class="card">
-    <table>
-      <thead><tr><th>Nama</th><th>ID</th><th>Pakai / Kuota</th><th>Periode</th><th>Tipe</th><th></th></tr></thead>
-      <tbody id="keysBody"></tbody>
-    </table>
-    <p id="totals"></p>
-  </div>
+<div class="dash">
+<aside class="side">
+  <div class="side-brand">ArsRouter Proxy</div>
+  <div class="side-tag">Admin dashboard</div>
+  <nav>
+    <a href="#sec-overview">Overview</a>
+    <a href="#sec-keys">API Key</a>
+    <a href="#sec-providers">Provider</a>
+    <a href="#sec-chat">Tes Chat</a>
+  </nav>
+</aside>
+<main class="dash-main">
+  <section id="sec-overview">
+    <h2>Overview</h2>
+    <div class="stats">
+      <div class="stat"><span>Total Key</span><b id="statKeys">…</b><small>key gateway aktif</small></div>
+      <div class="stat"><span>Token Terpakai</span><b id="statTokens">…</b><small>terpakai / total kuota</small></div>
+      <div class="stat"><span>Provider</span><b id="statProviders">…</b><small>provider terkonfigurasi</small></div>
+      <div class="stat"><span>Model</span><b id="statModels">…</b><small>model tersedia</small></div>
+    </div>
+    <div class="card">
+      <div style="font-weight:600;margin-bottom:12px">Pemakaian Token</div>
+      <div class="donut-wrap">
+        <svg width="96" height="96" viewBox="0 0 96 96">
+          <circle cx="48" cy="48" r="34" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="10"/>
+          <circle id="usageDonutArc" cx="48" cy="48" r="34" fill="none" stroke="#38bdf8" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 213.63"/>
+        </svg>
+        <div><div id="usageDonutPct" style="font-size:24px;font-weight:700">…</div><div id="usageDonutSub" style="color:var(--muted);font-size:13px">Memuat…</div></div>
+      </div>
+    </div>
+  </section>
 
-  <h2>Provider</h2>
-  <div class="card" id="providers"></div>
+  <section id="sec-keys">
+    <h2>API key gateway</h2>
+    <div class="card">
+      <input id="keyName" placeholder="Nama key (mis. main)" size="24">
+      <input id="keyQuota" type="number" placeholder="Kuota token/bulan" value="1000000" min="1" style="width:170px">
+      <button id="createKeyBtn">Buat key</button>
+      <div id="newKey" style="margin-top:10px"></div>
+    </div>
+    <div class="card">
+      <table>
+        <thead><tr><th>Nama</th><th>ID</th><th>Pakai / Kuota</th><th>Periode</th><th>Tipe</th><th></th></tr></thead>
+        <tbody id="keysBody"></tbody>
+      </table>
+      <p id="totals"></p>
+    </div>
+  </section>
 
-  <h2>Tes chat (pakai gateway key, bukan admin key)</h2>
-  <div class="card">
-    <input id="gwKey" placeholder="Gateway key (ca-…)" size="40">
-    <input id="chatModel" placeholder="Model (mis. zai-org/GLM-5.3-Flash)" size="34">
-    <textarea id="chatMsg" placeholder="Pesan…">Halo, jawab singkat: apa itu ArsRouter Proxy?</textarea>
-    <p><button id="chatBtn">Kirim</button></p>
-    <div id="chatOut" class="mono"></div>
-  </div>
+  <section id="sec-providers">
+    <h2>Provider</h2>
+    <div class="card" id="providers"></div>
+  </section>
+
+  <section id="sec-chat">
+    <h2>Tes chat (pakai gateway key, bukan admin key)</h2>
+    <div class="card">
+      <input id="gwKey" placeholder="Gateway key (ca-…)" size="40">
+      <input id="chatModel" placeholder="Model (mis. zai-org/GLM-5.3-Flash)" size="34">
+      <textarea id="chatMsg" placeholder="Pesan…">Halo, jawab singkat: apa itu ArsRouter Proxy?</textarea>
+      <p><button id="chatBtn">Kirim</button></p>
+      <div id="chatOut" class="mono"></div>
+    </div>
+  </section>
+</main>
+</div>
 </div>
 
 <div class="warn"><b>Keamanan:</b> key provider tidak pernah tampil di dashboard ini.
@@ -244,6 +321,23 @@ Key provider hanya ada di Pages Secrets. Key gateway mentah hanya ditampilkan se
 <script>
 const $ = (id) => document.getElementById(id);
 const adminHeaders = () => ({ "Authorization": "Bearer " + (sessionStorage.getItem("ca_admin") || ""), "Content-Type": "application/json" });
+
+// Data terakhir untuk kartu statistik Overview (health = publik, usage = butuh login).
+let healthData = null;
+let usageTotals = null;
+function renderStats() {
+  if ($("statKeys")) $("statKeys").textContent = usageTotals ? usageTotals.keys : "…";
+  if ($("statTokens")) $("statTokens").textContent = usageTotals ? `${usageTotals.used_tokens.toLocaleString()} / ${usageTotals.quota_tokens.toLocaleString()}` : "…";
+  if ($("statProviders")) $("statProviders").textContent = healthData ? healthData.providers : "…";
+  if ($("statModels")) $("statModels").textContent = healthData ? healthData.models : "…";
+  if (usageTotals && usageTotals.quota_tokens > 0) {
+    const pct = Math.min(100, Math.round(usageTotals.used_tokens / usageTotals.quota_tokens * 100));
+    const arc = $("usageDonutArc");
+    if (arc) arc.setAttribute("stroke-dasharray", `${(pct / 100 * 213.63).toFixed(1)} 213.63`);
+    if ($("usageDonutPct")) $("usageDonutPct").textContent = pct + "%";
+    if ($("usageDonutSub")) $("usageDonutSub").textContent = "token terpakai dari total kuota";
+  }
+}
 
 async function loadHealth() {
   try {
@@ -254,6 +348,8 @@ async function loadHealth() {
       `Admin: ${h.admin_configured ? '<span class="ok">terkonfigurasi</span>' : '<span class="bad">ADMIN_KEY belum diset</span>'} · ` +
       `Provider: ${h.providers} · Model: ${h.models}` +
       (h.kv_bound ? "" : "<p>Bind KV namespace sebagai <code>GATEWAY_KV</code> di Pages → Settings → Functions → KV namespace bindings, lalu redeploy.</p>");
+    healthData = h;
+    renderStats();
   } catch (e) {
     $("health").innerHTML = '<span class="bad">Gagal memuat /api/health: ' + e.message + "</span>";
   }
@@ -273,7 +369,7 @@ async function loadUsage() {
     if (!r.ok) { $("keysBody").innerHTML = `<tr><td colspan="6">${u.error?.message || r.status}</td></tr>`; return; }
     $("keysBody").innerHTML = u.keys.map(k => `<tr>
       <td>${k.name}</td><td class="mono">${k.id}</td>
-      <td>${k.used_tokens.toLocaleString()} / ${k.quota_tokens.toLocaleString()}</td>
+      <td>${k.used_tokens.toLocaleString()} / ${k.quota_tokens.toLocaleString()}<div class="ubar"><i style="width:${k.quota_tokens > 0 ? Math.min(100, Math.round(k.used_tokens / k.quota_tokens * 100)) : 0}%"></i></div></td>
       <td>${k.period}</td>
       <td>${k.quota_type === "package" ? "Paket" : "Bulanan"}${k.has_upstream ? " · hybrid" : ""}</td>
       <td><button class="danger" data-del="${k.id}">Hapus</button></td></tr>`).join("") || '<tr><td colspan="6">Belum ada key.</td></tr>';
@@ -283,6 +379,8 @@ async function loadUsage() {
       loadUsage();
     });
     $("totals").textContent = `Total: ${u.totals.keys} key · ${u.totals.used_tokens.toLocaleString()} / ${u.totals.quota_tokens.toLocaleString()} token.`;
+    usageTotals = u.totals;
+    renderStats();
     $("providers").innerHTML = u.providers.length
       ? u.providers.map(p => `<p>${p.name}: ${p.models} model</p>`).join("")
       : "<p>Belum ada provider terkonfigurasi. Set PROVIDER_1_* di Pages Secrets.</p>";
