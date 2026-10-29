@@ -13,10 +13,10 @@
   <div class="side-brand">ArsRouter Proxy</div>
   <div class="side-tag">Admin dashboard</div>
   <nav>
-    <a href="#sec-overview">Overview</a>
-    <a href="#sec-keys">API Key</a>
-    <a href="#sec-providers">Provider</a>
-    <a href="#sec-chat">Tes Chat</a>
+    <a href="#sec-overview" data-view="overview">Overview</a>
+    <a href="#sec-keys" data-view="keys">API Key</a>
+    <a href="#sec-providers" data-view="providers">Provider</a>
+    <a href="#sec-chat" data-view="chat">Tes Chat</a>
     <a href="/">← Beranda</a>
   </nav>
   <p><button id="logoutBtn" class="login-ghost">Logout</button></p>
@@ -176,6 +176,23 @@ $("chatBtn").onclick = async () => {
 };
 
 $("logoutBtn").onclick = () => { sessionStorage.removeItem("ca_admin"); location.href = "/admin/"; };
+// Sidebar jadi pemindah tampilan: satu section tampil, sisanya sembunyi
+// (bukan satu halaman panjang di-scroll). Tanpa JS, href anchor tetap jalan.
+const VIEWS = ["overview", "keys", "providers", "chat"];
+function showView(view) {
+  VIEWS.forEach((v) => {
+    const sec = $("sec-" + v);
+    if (sec) sec.style.display = v === view ? "block" : "none";
+  });
+  document.querySelectorAll(".side nav a[data-view]").forEach((a) => {
+    a.classList.toggle("active", a.dataset.view === view);
+  });
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll(".side nav a[data-view]").forEach((a) => {
+  a.onclick = (e) => { e.preventDefault(); showView(a.dataset.view); };
+});
+showView("overview");
 // Gerbang: dashboard hanya untuk sesi login; sisanya kembali ke /admin/.
 // (Proteksi sebenarnya tetap ADMIN_KEY di API — ini hanya routing halaman.)
 if (!sessionStorage.getItem("ca_admin")) {

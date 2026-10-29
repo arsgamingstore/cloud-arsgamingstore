@@ -190,6 +190,7 @@
   .side-tag { color: var(--muted); font-size: 12px; margin: 2px 0 14px; }
   .side nav a { display: block; color: var(--text); text-decoration: none; padding: 9px 12px; border-radius: 10px; font-size: 14px; }
   .side nav a:hover { background: rgba(255, 255, 255, .07); }
+  .side nav a.active { background: rgba(255, 255, 255, .12); font-weight: 600; }
   .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
   .stat {
     background: linear-gradient(160deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .03));
