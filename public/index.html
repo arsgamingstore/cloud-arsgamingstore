@@ -32,11 +32,12 @@
   .brand { display: flex; align-items: center; gap: 14px; }
   .brand h1 { margin: 0; }
   .logo {
-    height: 64px;
+    height: 110px;
     width: auto;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, .35);
+  }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0, 0, 0, 0); white-space: nowrap;
   }
   h2 {
     font-size: 17px;
@@ -75,9 +76,9 @@
   .sec-tag { font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted); letter-spacing: .08em; margin: 32px 0 2px; }
   .sec-tag + h2 { margin-top: 0; }
   /* Navbar ala Apple-style (rekreasi CSS vanilla): pill kaca melayang,
-     fixed di atas, membesar halus saat hover. Brand teks (bukan video
-     logo — video logo ber-background hitam, akan jadi kotak hitam di
-     pill kaca). Link hanya anchor section + CTA bot. SENGAJA tidak ada:
+     fixed di atas, membesar halus saat hover. Brand tetap teks (hero
+     sudah pakai logo PNG transparan; navbar sengaja tidak pakai gambar).
+     Link hanya anchor section + CTA bot. SENGAJA tidak ada:
      ikon search (tidak ada fungsi search) dan tombol Login (admin tidak
      di-link dari landing, sesuai guard di bawah). */
   .navbar {
@@ -138,7 +139,7 @@
   <a class="nav-cta" href="https://t.me/ArsapikeyBot"><span class="b-full">Beli via Bot</span><span class="b-short">Beli</span></a>
 </nav>
 <p class="tag">[ v1 ] · Gateway AI Workers-native</p>
-<div class="brand" id="top"><video src="/logo.mp4" autoplay loop muted playsinline class="logo" aria-label="ArsRouter Proxy"></video><h1>ArsRouter Proxy</h1></div>
+<div class="brand" id="top"><img src="/logo.png" class="logo" alt="ArsRouter Proxy"><h1 class="sr-only">ArsRouter Proxy</h1></div>
 <p class="hero-head">Model uncensored, satu endpoint.</p>
 <p class="hero-sub">Satu endpoint OpenAI-compatible di depan banyak provider. Key <code>ars-…</code> dari gateway ini, bayar lewat bot, tanpa sensor.</p>
 <div class="card mono term">$ curl https://cloud-arsgamingstore.pages.dev/v1/chat/completions -H "Authorization: Bearer ars-…"</div>
