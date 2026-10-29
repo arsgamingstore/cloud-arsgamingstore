@@ -37,10 +37,6 @@
   }
   .brand { display: flex; align-items: center; gap: 14px; justify-content: center; }
   .brand h1 { margin: 0; }
-  .logo {
-    height: 110px;
-    width: auto;
-  }
   .sr-only {
     position: absolute; width: 1px; height: 1px; overflow: hidden;
     clip: rect(0, 0, 0, 0); white-space: nowrap;
@@ -117,6 +113,7 @@
     color: var(--lime); background: none;
     -webkit-background-clip: initial; background-clip: initial;
   }
+  .nav-logo { height: 30px; width: auto; display: block; }
   .nav-links { display: flex; gap: 18px; }
   .nav-links a { color: var(--muted); text-decoration: none; font-family: ui-monospace, monospace; font-size: 13px; white-space: nowrap; }
   .nav-links a:hover { color: var(--text); }
@@ -150,7 +147,7 @@
      Admin tinggal di /admin/ dan tidak di-link dari halaman ini.
      Navbar di bawah juga tidak punya tombol Login / ikon search. -->
 <nav class="navbar">
-  <a class="nav-brand" href="#top" data-view="all"><span class="b-full">ArsRouter Proxy</span><span class="b-short">ArsRouter</span></a>
+  <a class="nav-brand" href="#top" data-view="all"><img src="/logo-lime.png" class="nav-logo" alt="ArsRouter Proxy"></a>
   <span class="nav-links">
     <a href="#uncen" data-view="uncen">Uncen</a>
     <a href="#standar" data-view="standar">Standar</a>
@@ -159,7 +156,7 @@
   <a class="nav-cta" href="https://t.me/ArsapikeyBot"><span class="b-full">Beli via Bot</span><span class="b-short">Beli</span></a>
 </nav>
 <p class="tag"><span class="lm">[</span> v1 <span class="lm">]</span> · GATEWAY AI WORKERS-NATIVE</p>
-<div class="brand" id="top"><img src="/logo.png" class="logo" alt="ArsRouter Proxy"><h1 class="sr-only">ArsRouter Proxy</h1></div>
+<div class="brand" id="top"><h1 class="sr-only">ArsRouter Proxy</h1></div>
 <p class="hero-head">Model uncensored, satu <span class="lm">endpoint.</span></p>
 <p class="hero-sub">Satu endpoint OpenAI-compatible di depan banyak provider. Key <code>ars-…</code> dari gateway ini, bayar lewat bot, tanpa sensor.</p>
 <div class="cta-row">
