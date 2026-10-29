@@ -13,13 +13,19 @@
     --muted: #8f8f8f;
     --violet: #8b7bff;
     --cyan: #22d3ee;
+    --lime: #a3e635;
   }
   body {
     font-family: system-ui, sans-serif;
     color: var(--text);
-    margin: 0;
-    padding: 76px 24px 24px;
-    background: var(--bg);
+    margin: 0 auto;
+    max-width: 760px;
+    padding: 76px 24px 40px;
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(700px 300px at 85% -10%, rgba(163, 230, 53, .08), transparent 60%),
+      radial-gradient(rgba(255, 255, 255, .055) 1px, transparent 1.5px);
+    background-size: auto, 26px 26px;
   }
   h1 {
     font-size: 26px;
@@ -29,7 +35,7 @@
     background-clip: text;
     color: transparent;
   }
-  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand { display: flex; align-items: center; gap: 14px; justify-content: center; }
   .brand h1 { margin: 0; }
   .logo {
     height: 110px;
@@ -40,12 +46,12 @@
     clip: rect(0, 0, 0, 0); white-space: nowrap;
   }
   h2 {
-    font-size: 17px;
+    font-size: 22px;
     margin-top: 32px;
     border-bottom: 1px solid var(--border);
     padding-bottom: 6px;
   }
-  a { color: #a5b4fc; }
+  a { color: var(--lime); }
   .card {
     background: rgba(255, 255, 255, .03);
     border: 1px solid var(--border);
@@ -67,12 +73,27 @@
   .bad { color: #fb7185; }
   /* Hero ala ModelRanker (rekreasi, bukan jiplakan): tag mono, headline
      tebal, snippet terminal, bar statistik dari endpoint publik. */
-  .tag { font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted); letter-spacing: .08em; }
-  .hero-head { font-size: 30px; line-height: 1.15; font-weight: 800; letter-spacing: -.01em; margin: 18px 0 8px; max-width: 640px; }
-  .hero-sub { color: var(--muted); max-width: 640px; line-height: 1.6; }
+  .tag { font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted); letter-spacing: .08em; text-align: center; }
+  .lm { color: var(--lime); }
+  .hero-head { font-size: 64px; line-height: 1.05; font-weight: 800; letter-spacing: -.02em; margin: 18px auto 12px; text-align: center; }
+  .hero-sub { color: var(--muted); max-width: 640px; line-height: 1.6; margin: 0 auto; text-align: center; }
   .term { overflow-x: auto; white-space: nowrap; font-size: 13px; color: #d4d4d4; }
-  .stats { display: flex; flex-wrap: wrap; gap: 8px 24px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 12px 0; margin: 20px 0 8px; font-family: ui-monospace, monospace; font-size: 13px; color: var(--muted); }
-  .stats b { color: var(--text); font-weight: 600; }
+  .cta-row { display: flex; gap: 12px; justify-content: center; margin: 24px 0; flex-wrap: wrap; }
+  .btn-solid { background: var(--lime); color: #0a0a0a; font-weight: 700; padding: 12px 20px; border-radius: 8px; text-decoration: none; }
+  .btn-outline { border: 1px solid var(--border); color: var(--text); padding: 12px 20px; border-radius: 8px; text-decoration: none; }
+  .stats { display: flex; flex-wrap: wrap; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 16px 0; margin: 24px 0 8px; font-family: ui-monospace, monospace; }
+  .stats .cell { flex: 1; min-width: 120px; padding: 0 16px; border-left: 1px solid var(--border); }
+  .stats .cell:first-child { border-left: none; padding-left: 0; }
+  .stats .cell small { display: block; font-size: 11px; letter-spacing: .08em; color: var(--muted); }
+  .stats .cell b { display: block; font-size: 26px; color: var(--text); margin-top: 4px; }
+  .mrow { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); font-family: ui-monospace, monospace; font-size: 14px; }
+  .mrow .dim { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .pill { font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; color: var(--lime); border: 1px solid rgba(163, 230, 53, .5); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+  footer { border-top: 1px solid var(--border); margin-top: 48px; padding: 24px 0 8px; display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; align-items: baseline; }
+  .foot-brand { font-weight: 700; letter-spacing: .06em; }
+  .foot-links { display: flex; gap: 16px; }
+  .foot-links a { color: var(--muted); text-decoration: none; font-size: 13px; }
+  .foot-copy { color: var(--muted); font-size: 12px; }
   .sec-tag { font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted); letter-spacing: .08em; margin: 32px 0 2px; }
   .sec-tag + h2 { margin-top: 0; }
   /* Navbar ala Apple-style (rekreasi CSS vanilla): pill kaca melayang,
@@ -85,36 +106,36 @@
     position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
     display: flex; align-items: center; gap: 22px;
     padding: 10px 18px; max-width: calc(100% - 32px); box-sizing: border-box;
-    background: linear-gradient(160deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .04));
-    border: 1px solid rgba(255, 255, 255, .16); border-radius: 999px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .14);
-    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    background: #101010;
+    border: 1px solid var(--border); border-radius: 999px;
     z-index: 50;
-    transition: padding .25s ease, box-shadow .25s ease, border-color .25s ease;
+    transition: border-color .25s ease;
   }
-  .navbar:hover { padding: 12px 24px; border-color: rgba(167, 139, 250, .45); box-shadow: 0 16px 48px rgba(0, 0, 0, .5), 0 0 24px rgba(139, 123, 255, .18); }
+  .navbar:hover { border-color: rgba(163, 230, 53, .45); }
   .nav-brand {
+    font-family: ui-monospace, monospace;
     font-weight: 700; white-space: nowrap; text-decoration: none;
-    background: linear-gradient(90deg, #c4b5fd, #67e8f9);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
+    color: var(--lime); background: none;
+    -webkit-background-clip: initial; background-clip: initial;
   }
   .nav-links { display: flex; gap: 18px; }
-  .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; white-space: nowrap; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-family: ui-monospace, monospace; font-size: 13px; white-space: nowrap; }
   .nav-links a:hover { color: var(--text); }
-  .nav-links a.active { color: var(--text); font-weight: 600; }
+  .nav-links a.active { color: var(--lime); font-weight: 600; }
   .nav-cta {
-    background: linear-gradient(135deg, #38bdf8, #2563eb); color: #fff;
-    text-decoration: none; font-size: 13px; font-weight: 600;
+    background: var(--lime); color: #0a0a0a;
+    text-decoration: none; font-size: 13px; font-weight: 700;
     padding: 8px 14px; border-radius: 999px; white-space: nowrap;
-    box-shadow: 0 4px 20px rgba(37, 99, 235, .4);
   }
   .b-short { display: none; }
   h2 { scroll-margin-top: 80px; }
   @media (max-width: 560px) {
-    .hero-head { font-size: 23px; }
+    .hero-head { font-size: 38px; }
+    .navbar { gap: 12px; padding: 8px 12px; overflow-x: auto; scrollbar-width: none; }
     .navbar::-webkit-scrollbar { display: none; }
     .nav-links { gap: 10px; }
     .nav-links a { font-size: 13px; }
+    .stats .cell { min-width: 100px; padding: 0 12px; }
     .b-full { display: none; }
     .b-short { display: inline; }
   }
@@ -138,26 +159,34 @@
   </span>
   <a class="nav-cta" href="https://t.me/ArsapikeyBot"><span class="b-full">Beli via Bot</span><span class="b-short">Beli</span></a>
 </nav>
-<p class="tag">[ v1 ] · Gateway AI Workers-native</p>
+<p class="tag"><span class="lm">[</span> v1 <span class="lm">]</span> · GATEWAY AI WORKERS-NATIVE</p>
 <div class="brand" id="top"><img src="/logo.png" class="logo" alt="ArsRouter Proxy"><h1 class="sr-only">ArsRouter Proxy</h1></div>
-<p class="hero-head">Model uncensored, satu endpoint.</p>
+<p class="hero-head">Model uncensored, satu <span class="lm">endpoint.</span></p>
 <p class="hero-sub">Satu endpoint OpenAI-compatible di depan banyak provider. Key <code>ars-…</code> dari gateway ini, bayar lewat bot, tanpa sensor.</p>
-<div class="card mono term">$ curl https://cloud-arsgamingstore.pages.dev/v1/chat/completions -H "Authorization: Bearer ars-…"</div>
-<div class="stats"><span>Provider <b id="statProviders">–</b></span><span>Model standar <b id="statModels">–</b></span><span>Model uncensored <b>2</b></span></div>
+<div class="cta-row">
+  <a class="btn-solid" href="https://t.me/ArsapikeyBot">Beli via Bot →</a>
+  <a class="btn-outline" href="#standar" data-view="standar">Lihat Model</a>
+</div>
+<div class="card mono term"><span class="lm">$</span> curl https://cloud-arsgamingstore.pages.dev/v1/chat/completions -H "Authorization: Bearer ars-…"</div>
+<div class="stats">
+  <span class="cell"><small>PROVIDER</small><b id="statProviders">–</b></span>
+  <span class="cell"><small>MODEL STANDAR</small><b id="statModels">–</b></span>
+  <span class="cell"><small>MODEL UNCENSORED</small><b>2</b></span>
+</div>
 
 <div id="view-uncen">
-<p class="sec-tag">[ 01 ]</p>
+<p class="sec-tag"><span class="lm">[</span> 01 <span class="lm">]</span></p>
 <h2 id="uncen">Model Uncensored</h2>
 <p>Model tanpa sensor, dijual lewat bot Telegram. Key-nya key <code>ars-…</code> dari gateway ini.</p>
 <!-- Daftar ini HARUS sama dengan HYBRID_MODELS di ars-reseller-bot/src/lib/bot.js.
      Kalau bot nambah model, update juga daftar di bawah. -->
-<div class="card mono">deepseek-v4.1-flash-uncensored</div>
-<div class="card mono">glm-5.3-flash-uncensored</div>
+<div class="mrow">deepseek-v4.1-flash-uncensored<span class="pill">UNCENSORED</span></div>
+<div class="mrow">glm-5.3-flash-uncensored<span class="pill">UNCENSORED</span></div>
 <p><a href="https://t.me/ArsapikeyBot">Beli via @ArsapikeyBot →</a></p>
 </div>
 
 <div id="view-standar">
-<p class="sec-tag">[ 02 ]</p>
+<p class="sec-tag"><span class="lm">[</span> 02 <span class="lm">]</span></p>
 <h2 id="standar">Model Standar</h2>
 <p>Model standar lewat provider gateway. Daftar di bawah diambil live dari gateway.</p>
 <div id="stdModels">Memuat daftar model…</div>
@@ -165,7 +194,7 @@
 </div>
 
 <div id="view-cara">
-<p class="sec-tag">[ 03 ]</p>
+<p class="sec-tag"><span class="lm">[</span> 03 <span class="lm">]</span></p>
 <h2 id="cara">Cara pakai</h2>
 <div class="card">
   <p>1. Dapat key (<code>ars-…</code>) dari bot atau admin.<br>
@@ -175,6 +204,16 @@
 </div>
 </div>
 
+<footer>
+  <div class="foot-brand mono">ARSROUTER PROXY</div>
+  <div class="foot-links">
+    <a href="https://t.me/ArsapikeyBot">Beli via Bot</a>
+    <a href="https://t.me/arsgamingstore">@arsgamingstore</a>
+    <a href="#top" data-view="all">Beranda</a>
+  </div>
+  <div class="foot-copy mono">© 2026 ArsRouter Proxy · OpenAI-compatible gateway</div>
+</footer>
+
 <script>
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 async function loadModels() {
@@ -182,9 +221,9 @@ async function loadModels() {
   try {
     const r = await fetch("/v1/models");
     const d = await r.json();
-    const ids = (d.data || []).map((m) => m.id);
-    el.innerHTML = ids.length
-      ? ids.map((id) => `<div class="card mono">${esc(id)}</div>`).join("")
+    const models = d.data || [];
+    el.innerHTML = models.length
+      ? models.map((m) => `<div class="mrow"><span>${esc(m.id)}</span><span class="dim">${esc(m.owned_by || "")}</span></div>`).join("")
       : "<p>Belum ada model standar terkonfigurasi.</p>";
   } catch (e) {
     el.innerHTML = '<span class="bad">Gagal memuat daftar model: ' + esc(e.message) + "</span>";
@@ -216,7 +255,7 @@ function showLandingView(view) {
   });
   window.scrollTo(0, 0);
 }
-document.querySelectorAll(".navbar a[data-view]").forEach((a) => {
+document.querySelectorAll("a[data-view]").forEach((a) => {
   a.addEventListener("click", (e) => { e.preventDefault(); showLandingView(a.dataset.view); });
 });
 </script>
