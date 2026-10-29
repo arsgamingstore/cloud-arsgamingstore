@@ -18,7 +18,7 @@
     font-family: system-ui, sans-serif;
     color: var(--text);
     margin: 0;
-    padding: 24px;
+    padding: 76px 24px 24px;
     background:
       radial-gradient(600px 400px at 15% -5%, rgba(139, 123, 255, .28), transparent 60%),
       radial-gradient(700px 500px at 90% 10%, rgba(34, 211, 238, .16), transparent 60%),
@@ -80,19 +80,72 @@
   }
   .mono { font-family: ui-monospace, monospace; }
   .bad { color: #fb7185; }
+  /* Navbar ala Apple-style (rekreasi CSS vanilla): pill kaca melayang,
+     fixed di atas, membesar halus saat hover. Brand teks (bukan video
+     logo — video logo ber-background hitam, akan jadi kotak hitam di
+     pill kaca). Link hanya anchor section + CTA bot. SENGAJA tidak ada:
+     ikon search (tidak ada fungsi search) dan tombol Login (admin tidak
+     di-link dari landing, sesuai guard di bawah). */
+  .navbar {
+    position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 22px;
+    padding: 10px 18px; max-width: calc(100% - 32px); box-sizing: border-box;
+    background: linear-gradient(160deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .04));
+    border: 1px solid rgba(255, 255, 255, .16); border-radius: 999px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .14);
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    z-index: 50;
+    transition: padding .25s ease, box-shadow .25s ease, border-color .25s ease;
+  }
+  .navbar:hover { padding: 12px 24px; border-color: rgba(167, 139, 250, .45); box-shadow: 0 16px 48px rgba(0, 0, 0, .5), 0 0 24px rgba(139, 123, 255, .18); }
+  .nav-brand {
+    font-weight: 700; white-space: nowrap; text-decoration: none;
+    background: linear-gradient(90deg, #c4b5fd, #67e8f9);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .nav-links { display: flex; gap: 18px; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; white-space: nowrap; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    background: linear-gradient(135deg, #38bdf8, #2563eb); color: #fff;
+    text-decoration: none; font-size: 13px; font-weight: 600;
+    padding: 8px 14px; border-radius: 999px; white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(37, 99, 235, .4);
+  }
+  .b-short { display: none; }
+  h2 { scroll-margin-top: 80px; }
+  @media (max-width: 560px) {
+    .navbar { gap: 12px; padding: 8px 12px; }
+    .nav-links { gap: 10px; }
+    .nav-links a { font-size: 13px; }
+    .b-full { display: none; }
+    .b-short { display: inline; }
+    .hide-m { display: none; }
+  }
   @media (prefers-reduced-motion: reduce) {
     .card { animation: none; transition: none; }
+    .navbar { transition: none; }
   }
 </style>
 </head>
 <body>
 <!-- Landing publik. SENGAJA tidak ada di sini: form login admin, status
      admin, /api/health, /api/admin, dan link apa pun ke halaman admin.
-     Admin tinggal di /admin/ dan tidak di-link dari halaman ini. -->
-<div class="brand"><video src="/logo.mp4" autoplay loop muted playsinline class="logo" aria-label="ArsRouter Proxy"></video><h1>ArsRouter Proxy</h1></div>
+     Admin tinggal di /admin/ dan tidak di-link dari halaman ini.
+     Navbar di bawah juga tidak punya tombol Login / ikon search. -->
+<nav class="navbar">
+  <a class="nav-brand" href="#top"><span class="b-full">ArsRouter Proxy</span><span class="b-short">ArsRouter</span></a>
+  <span class="nav-links">
+    <a href="#uncen">Uncen</a>
+    <a href="#standar">Standar</a>
+    <a href="#cara" class="hide-m">Cara Pakai</a>
+  </span>
+  <a class="nav-cta" href="https://t.me/ArsapikeyBot"><span class="b-full">Beli via Bot</span><span class="b-short">Beli</span></a>
+</nav>
+<div class="brand" id="top"><video src="/logo.mp4" autoplay loop muted playsinline class="logo" aria-label="ArsRouter Proxy"></video><h1>ArsRouter Proxy</h1></div>
 <p>Gateway AI Workers-native: satu endpoint OpenAI-compatible di depan banyak provider.</p>
 
-<h2>Model Uncensored</h2>
+<h2 id="uncen">Model Uncensored</h2>
 <p>Model tanpa sensor, dijual lewat bot Telegram. Key-nya key <code>ca-…</code> dari gateway ini.</p>
 <!-- Daftar ini HARUS sama dengan HYBRID_MODELS di ars-reseller-bot/src/lib/bot.js.
      Kalau bot nambah model, update juga daftar di bawah. -->
@@ -100,12 +153,12 @@
 <div class="card mono">glm-5.3-flash-uncensored</div>
 <p><a href="https://t.me/ArsapikeyBot">Beli via @ArsapikeyBot →</a></p>
 
-<h2>Model Standar</h2>
+<h2 id="standar">Model Standar</h2>
 <p>Model standar lewat provider gateway. Daftar di bawah diambil live dari gateway.</p>
 <div id="stdModels">Memuat daftar model…</div>
 <p>Key standar dibuat admin — hubungi <a href="https://t.me/arsgamingstore">@arsgamingstore</a>.</p>
 
-<h2>Cara pakai</h2>
+<h2 id="cara">Cara pakai</h2>
 <div class="card">
   <p>1. Dapat key (<code>ca-…</code>) dari bot atau admin.<br>
   2. Arahkan client OpenAI-compatible kamu ke Base URL ini:<br>
