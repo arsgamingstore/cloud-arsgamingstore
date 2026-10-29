@@ -82,6 +82,9 @@
   .stats .cell b.floor { font-size: 20px; }
   .mrow { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); font-family: ui-monospace, monospace; font-size: 14px; }
   .pill { font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; color: var(--lime); border: 1px solid rgba(163, 230, 53, .5); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+  .mrow-desc { display: block; }
+  .mrow-desc .mhead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .mdesc { font-family: system-ui, sans-serif; color: var(--muted); font-size: 14px; line-height: 1.6; margin: 8px 0 0; }
   footer { border-top: 1px solid var(--border); margin-top: 48px; padding: 24px 0 8px; display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; align-items: baseline; }
   .foot-brand { font-weight: 700; letter-spacing: .06em; }
   .foot-links { display: flex; gap: 16px; }
@@ -169,12 +172,12 @@
 <div id="view-uncen">
 <p class="sec-tag"><span class="lm">[</span> 01 <span class="lm">]</span></p>
 <h2 id="uncen">Model Uncensored</h2>
-<p>Model tanpa sensor, dijual lewat bot Telegram. Key-nya key <code>ars-…</code> dari gateway ini.</p>
 <!-- Daftar ini HARUS sama dengan HYBRID_MODELS di ars-reseller-bot/src/lib/bot.js.
      Kalau bot nambah model, update juga daftar di bawah. -->
-<div class="mrow">deepseek-v4.1-flash-uncensored<span class="pill">UNCENSORED</span></div>
-<div class="mrow">glm-5.3-flash-uncensored<span class="pill">UNCENSORED</span></div>
-<p><a href="https://t.me/ArsapikeyBot">Beli via @ArsapikeyBot →</a></p>
+<div class="mrow mrow-desc"><div class="mhead">deepseek-v4.1-flash-uncensored<span class="pill">UNCENSORED</span></div>
+<p class="mdesc">A lower-refusal finetune of DeepSeek V4.1 Flash with text and image input, optional reasoning, and tool calling. Supports a context window of up to 1M tokens.</p></div>
+<div class="mrow mrow-desc"><div class="mhead">glm-5.3-flash-uncensored<span class="pill">UNCENSORED</span></div>
+<p class="mdesc">GLM 5.3 Flash Uncensored is an uncensored fine-tune of the efficient 320B mixture-of-experts reasoning model with provider-dependent vision support, built for unrestricted chat, creative writing, coding, agentic work, tool use, and long-context tasks.</p></div>
 </div>
 
 <div id="view-standar">
