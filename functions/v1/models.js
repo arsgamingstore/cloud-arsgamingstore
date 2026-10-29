@@ -5,5 +5,5 @@ export async function onRequest({ request, env }) {
   if (request.method !== "GET") {
     return withCors(new Response("Method Not Allowed", { status: 405 }));
   }
-  return withCors(handleModels(env));
+  return withCors(await handleModels(env, request));
 }

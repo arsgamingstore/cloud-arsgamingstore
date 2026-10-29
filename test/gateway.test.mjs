@@ -5,6 +5,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   getProviders,
+  requireBot,
+  sha256Hex,
   handleModels,
   handleHealth,
   handleChatCompletions,
@@ -68,7 +70,7 @@ test("getProviders: grouping, sorting, skip incomplete, strip trailing slash", (
 });
 
 test("handleModels: dedupe across providers, no auth needed", async () => {
-  const res = handleModels(baseEnv(null));
+  const res = await handleModels(baseEnv(null));
   const data = await res.json();
   assert.equal(data.object, "list");
   assert.deepEqual(data.data.map((m) => m.id), ["zai-org/GLM-5.3-Flash", "model-shared"]);
@@ -204,3 +206,120 @@ test("admin: create/list hides secrets, delete revokes", async () => {
   const missing = await deleteGatewayKey(env, "nope");
   assert.equal(missing.error.status, 404);
 });
+
+// ---- hybrid keys (bot-sold packages) ----
+
+async function makeHybridKey(env, over = {}) {
+  const r = await createGatewayKey(env, {
+    name: "buyer",
+    quota_tokens: 1000000,
+    quota_type: "package",
+    upstream_api_key: "arx-test-secret",
+    models: ["deepseek-v4.1-flash-uncensored", "glm-5.3-flash-uncensored"],
+    ...over,
+  }, { allowUpstream: true, allowPackage: true });
+  assert.ok(!r.error, JSON.stringify(r.error));
+  assert.equal(r.created.quota_type, "package");
+  return r.created.key;
+}
+
+async function setRecord(kv, key, patch) {
+  const hash = await sha256Hex(key);
+  const rec = JSON.parse(await kv.get(`gwkey:${hash}`));
+  Object.assign(rec, patch);
+  await kv.put(`gwkey:${hash}`, JSON.stringify(rec));
+}
+
+test("hybrid: package key never resets, monthly key still resets", async () => {
+  const kv = new FakeKV();
+  const env = baseEnv(kv);
+  const monthly = await makeGatewayKey(env);
+  const hybrid = await makeHybridKey(env);
+  // Fake an old period with prior usage on both keys.
+  await setRecord(kv, monthly, { period: "2000-01", used_tokens: 500 });
+  await setRecord(kv, hybrid, { period: "2000-01", used_tokens: 500 });
+  const fetchStub = async () => jsonResp({ choices: [], usage: { total_tokens: 10 } });
+  await handleChatCompletions(chatReq(monthly, { model: "model-shared", messages: [] }), env, fetchStub);
+  await handleChatCompletions(chatReq(hybrid, { model: "deepseek-v4.1-flash-uncensored", messages: [] }), env, fetchStub);
+  const listed = await listGatewayKeys(env);
+  const byKey = Object.fromEntries(listed.keys.map((k) => [k.name, k]));
+  assert.equal(byKey.test.used_tokens, 10); // reset to 0, then +10
+  assert.equal(byKey.buyer.used_tokens, 510); // no reset: 500 + 10
+  assert.equal(byKey.buyer.quota_type, "package");
+  assert.equal(byKey.buyer.has_upstream, true);
+});
+
+test("hybrid: chat routes via key upstream only, never env providers", async () => {
+  const kv = new FakeKV();
+  const env = baseEnv(kv);
+  const hybrid = await makeHybridKey(env);
+  const seen = [];
+  const fetchStub = async (url, opts) => {
+    seen.push({ url, auth: opts.headers.Authorization });
+    return jsonResp({ choices: [], usage: { total_tokens: 1 } });
+  };
+  const res = await handleChatCompletions(
+    chatReq(hybrid, { model: "deepseek-v4.1-flash-uncensored", messages: [] }), env, fetchStub);
+  assert.equal(res.status, 200);
+  assert.equal(seen.length, 1);
+  assert.equal(seen[0].url, "https://arxpay.my.id/chat/completions");
+  assert.equal(seen[0].auth, "Bearer arx-test-secret");
+  // A River/env model must 404 for the hybrid key, without any fetch.
+  seen.length = 0;
+  const nf = await handleChatCompletions(
+    chatReq(hybrid, { model: "model-shared", messages: [] }), env, fetchStub);
+  assert.equal(nf.status, 404);
+  assert.equal(seen.length, 0);
+});
+
+test("hybrid: models masks owned_by for hybrid key, public list unchanged", async () => {
+  const kv = new FakeKV();
+  const env = baseEnv(kv);
+  const hybrid = await makeHybridKey(env);
+  const authed = new Request("https://gw.test/v1/models", {
+    headers: { Authorization: `Bearer ${hybrid}` },
+  });
+  const data = await (await handleModels(env, authed)).json();
+  assert.deepEqual(data.data.map((m) => m.id),
+    ["deepseek-v4.1-flash-uncensored", "glm-5.3-flash-uncensored"]);
+  assert.ok(data.data.every((m) => m.owned_by === "ArsRouter Proxy"));
+  assert.ok(!JSON.stringify(data).includes("arx"));
+  const pub = await (await handleModels(env)).json();
+  assert.deepEqual(pub.data.map((m) => m.id), ["zai-org/GLM-5.3-Flash", "model-shared"]);
+});
+
+test("bot: credential gating, upstream validation, no upstream leak", async () => {
+  const kv = new FakeKV();
+  const env = baseEnv(kv);
+  const botReq = (token) => new Request("https://gw.test/api/bot/keys", {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  assert.equal(requireBot(botReq("x"), env).status, 503); // BOT_SERVICE_KEY unset
+  env.BOT_SERVICE_KEY = "bot-secret";
+  assert.equal(requireBot(botReq("wrong"), env).status, 401);
+  assert.equal(requireBot(botReq("bot-secret"), env), null);
+  // Admin path ignores upstream input: no hybrid key smuggled via admin.
+  const plain = await createGatewayKey(env, {
+    name: "admin", quota_tokens: 100, quota_type: "package", upstream_api_key: "arx-test-secret",
+  });
+  assert.equal(plain.created.quota_type, "monthly");
+  const listed0 = await listGatewayKeys(env);
+  assert.equal(listed0.keys[0].has_upstream, false);
+  // Bot path validation.
+  const missing = await createGatewayKey(env, { name: "b", quota_tokens: 100, quota_type: "package" },
+    { allowUpstream: true, allowPackage: true });
+  assert.equal(missing.error.status, 400);
+  const evil = await createGatewayKey(env, {
+    name: "b", quota_tokens: 100, quota_type: "package",
+    upstream_api_key: "arx-test-secret", upstream_base_url: "https://evil.example/v1",
+  }, { allowUpstream: true, allowPackage: true });
+  assert.equal(evil.error.status, 400);
+  const ok = await createGatewayKey(env, {
+    name: "b", quota_tokens: 100, quota_type: "package", upstream_api_key: "arx-test-secret",
+  }, { allowUpstream: true, allowPackage: true });
+  assert.ok(!ok.error);
+  assert.ok(!JSON.stringify(ok.created).includes("arx-test-secret"));
+  const listed = await listGatewayKeys(env);
+  assert.ok(!JSON.stringify(listed).includes("arx-test-secret"));
+});
+

@@ -14,6 +14,11 @@
 const KEY_PREFIX = "gwkey:";
 const KEY_INDEX_PREFIX = "gwkeyid:";
 
+// Hybrid keys (bot-sold packages): per-key upstream, never env providers.
+const BOT_UPSTREAM_ALLOWLIST = ["https://arxpay.my.id", "https://rest-api.arsgaming.ai.id"];
+const ARXPAYS_DEFAULT_MODELS = ["deepseek-v4.1-flash-uncensored", "glm-5.3-flash-uncensored"];
+const HYBRID_OWNED_BY = "ArsRouter Proxy";
+
 export function getProviders(env) {
   const byIndex = new Map();
   for (const [k, v] of Object.entries(env)) {
@@ -93,6 +98,23 @@ export function requireAdmin(request, env) {
   return null;
 }
 
+// Scoped bot credential: ONLY the bot key-creation endpoint accepts it.
+// It can never list/delete keys or touch admin routes (those use ADMIN_KEY).
+export function requireBot(request, env) {
+  if (!env.BOT_SERVICE_KEY) return err("bot_not_configured", "BOT_SERVICE_KEY is not set on the server.", 503);
+  if (bearer(request) !== env.BOT_SERVICE_KEY) return err("unauthorized", "Invalid bot service key.", 401);
+  return null;
+}
+
+// Pure key lookup without quota enforcement or period reset (for /v1/models).
+async function loadKeyRecord(env, token) {
+  const kv = env.GATEWAY_KV;
+  if (!kv || !token) return null;
+  const hash = await sha256Hex(token);
+  const raw = await kv.get(KEY_PREFIX + hash);
+  return raw ? JSON.parse(raw) : null;
+}
+
 async function loadGatewayKey(env, token) {
   const kv = env.GATEWAY_KV;
   if (!kv) return { error: err("kv_not_bound", "GATEWAY_KV is not bound. Bind a KV namespace in Pages Settings.", 503) };
@@ -101,14 +123,22 @@ async function loadGatewayKey(env, token) {
   const raw = await kv.get(KEY_PREFIX + hash);
   if (!raw) return { error: err("unauthorized", "Invalid gateway key.", 401) };
   const record = JSON.parse(raw);
-  const now = monthKey();
-  if (record.period !== now) {
-    record.used_tokens = 0;
-    record.period = now;
-    await kv.put(KEY_PREFIX + hash, JSON.stringify(record));
+  // Package keys (bot-sold token packages) never reset: their quota is a
+  // one-time balance, not a monthly allowance. Monthly keys reset on UTC
+  // month change, as before.
+  if (record.quota_type !== "package") {
+    const now = monthKey();
+    if (record.period !== now) {
+      record.used_tokens = 0;
+      record.period = now;
+      await kv.put(KEY_PREFIX + hash, JSON.stringify(record));
+    }
   }
   if (record.used_tokens >= record.quota_tokens) {
-    return { error: err("quota_exceeded", "Monthly token quota exceeded for this key.", 429) };
+    const msg = record.quota_type === "package"
+      ? "Token package quota exceeded for this key."
+      : "Monthly token quota exceeded for this key.";
+    return { error: err("quota_exceeded", msg, 429) };
   }
   return { record, hash };
 }
@@ -129,7 +159,19 @@ function usageTokens(usage) {
   return (usage.prompt_tokens || 0) + (usage.completion_tokens || 0);
 }
 
-export function handleModels(env) {
+export async function handleModels(env, request) {
+  // Key-aware: a hybrid key (per-key upstream) sees ONLY its own models,
+  // with owned_by masked to the gateway brand so the upstream never leaks
+  // through /v1/models. No key / unknown key / plain key -> public list.
+  if (request) {
+    const record = await loadKeyRecord(env, bearer(request));
+    if (record && record.upstream && Array.isArray(record.upstream.models)) {
+      return json({
+        object: "list",
+        data: record.upstream.models.map((id) => ({ id, object: "model", owned_by: HYBRID_OWNED_BY })),
+      });
+    }
+  }
   const seen = new Set();
   const data = [];
   for (const p of getProviders(env)) {
@@ -167,7 +209,21 @@ export async function handleChatCompletions(request, env, fetchImpl = fetch) {
   if (!body || typeof body.model !== "string") {
     return err("invalid_request", "Field 'model' is required.", 400);
   }
-  const candidates = getProviders(env).filter((p) => p.models.includes(body.model));
+  // Hybrid key: route ONLY to the key's own upstream (its attached ArxPays
+  // key). It must never fall back to env providers — a buyer key must not
+  // spend the owner's River balance, and River models must 404 for it.
+  let candidates;
+  if (record.upstream && record.upstream.baseUrl && record.upstream.apiKey) {
+    const up = record.upstream;
+    candidates = [{
+      name: "upstream",
+      baseUrl: up.baseUrl.replace(/\/+$/, ""),
+      apiKey: up.apiKey,
+      models: Array.isArray(up.models) ? up.models : [],
+    }].filter((p) => p.models.includes(body.model));
+  } else {
+    candidates = getProviders(env).filter((p) => p.models.includes(body.model));
+  }
   if (candidates.length === 0) {
     return err("model_not_found", `No configured provider offers model '${body.model}'.`, 404);
   }
@@ -267,6 +323,8 @@ export async function listGatewayKeys(env) {
       quota_tokens: r.quota_tokens,
       used_tokens: r.used_tokens,
       period: r.period,
+      quota_type: r.quota_type || "monthly",
+      has_upstream: Boolean(r.upstream),
       created_at: r.created_at,
     });
   }
@@ -274,7 +332,7 @@ export async function listGatewayKeys(env) {
   return { keys: out };
 }
 
-export async function createGatewayKey(env, input) {
+export async function createGatewayKey(env, input, opts = {}) {
   const kv = env.GATEWAY_KV;
   if (!kv) return { error: err("kv_not_bound", "GATEWAY_KV is not bound.", 503) };
   const name = typeof input?.name === "string" ? input.name.trim().slice(0, 64) : "";
@@ -282,6 +340,30 @@ export async function createGatewayKey(env, input) {
   const quota = input?.quota_tokens ?? 1000000;
   if (typeof quota !== "number" || !Number.isInteger(quota) || quota <= 0) {
     return { error: err("invalid_request", "Field 'quota_tokens' must be a positive integer.", 400) };
+  }
+  const quota_type = opts.allowPackage && input?.quota_type === "package" ? "package" : "monthly";
+  // Per-key upstream: bot-created hybrid keys only (admin path passes no
+  // opts, so upstream input is ignored there). The upstream API key is
+  // stored raw in KV by necessity (the gateway must present it upstream);
+  // it is NEVER returned in any response or listing.
+  let upstream = null;
+  if (opts.allowUpstream) {
+    const apiKey = input?.upstream_api_key;
+    if (typeof apiKey !== "string" || !apiKey) {
+      return { error: err("invalid_request", "Field 'upstream_api_key' is required for a hybrid key.", 400) };
+    }
+    const baseUrl = (typeof input?.upstream_base_url === "string" && input.upstream_base_url
+      ? input.upstream_base_url : BOT_UPSTREAM_ALLOWLIST[0]).replace(/\/+$/, "");
+    if (!BOT_UPSTREAM_ALLOWLIST.includes(baseUrl)) {
+      return { error: err("invalid_request", "upstream_base_url is not allowlisted.", 400) };
+    }
+    let models = input?.models;
+    if (models === undefined) models = ARXPAYS_DEFAULT_MODELS;
+    if (!Array.isArray(models) || models.length === 0 || models.length > 20
+      || models.some((m) => typeof m !== "string" || !m)) {
+      return { error: err("invalid_request", "Field 'models' must be a non-empty array of model ids.", 400) };
+    }
+    upstream = { baseUrl, apiKey, models };
   }
   const id = randomHex(6);
   const rawKey = `ca-${randomHex(16)}`;
@@ -293,11 +375,13 @@ export async function createGatewayKey(env, input) {
     quota_tokens: quota,
     used_tokens: 0,
     period: monthKey(),
+    quota_type,
     created_at: new Date().toISOString(),
   };
+  if (upstream) record.upstream = upstream;
   await kv.put(KEY_PREFIX + hash, JSON.stringify(record));
   await kv.put(KEY_INDEX_PREFIX + id, hash);
-  return { created: { id, name, key: rawKey, quota_tokens: quota } };
+  return { created: { id, name, key: rawKey, quota_tokens: quota, quota_type } };
 }
 
 export async function deleteGatewayKey(env, id) {
