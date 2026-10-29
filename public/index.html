@@ -82,6 +82,7 @@
   .stats .cell b.floor { font-size: 20px; }
   .mrow { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); font-family: ui-monospace, monospace; font-size: 14px; }
   .pill { font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: .06em; color: var(--lime); border: 1px solid rgba(163, 230, 53, .5); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+  .pill-blue { color: #38bdf8; border-color: rgba(56, 189, 248, .5); background: rgba(56, 189, 248, .08); }
   .mrow-desc { display: block; }
   .mrow-desc .mhead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
   .mdesc { font-family: system-ui, sans-serif; color: var(--muted); font-size: 14px; line-height: 1.6; margin: 8px 0 0; }
@@ -218,7 +219,7 @@ async function loadModels() {
     const d = await r.json();
     const models = d.data || [];
     el.innerHTML = models.length
-      ? models.map((m) => `<div class="mrow"><span>${esc(m.id)}</span></div>`).join("")
+      ? models.map((m) => `<div class="mrow"><span>${esc(m.id)}</span><span class="pill pill-blue">STANDAR</span></div>`).join("")
       : "<p>Belum ada model standar terkonfigurasi.</p>";
   } catch (e) {
     el.innerHTML = '<span class="bad">Gagal memuat daftar model: ' + esc(e.message) + "</span>";
