@@ -133,6 +133,54 @@
   }
   textarea:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 3px rgba(139, 123, 255, .25); }
   #chatOut { white-space: pre-wrap; }
+  /* Login admin ala Glassy Login Form v3 (rekreasi CSS vanilla, bukan
+     copas komponen): kartu kaca terpusat, pita cahaya diagonal di dalam
+     kartu, tombol gradien biru full-width. Hanya tampilan — id elemen
+     dan logika auth di <script> tidak berubah. */
+  .login-wrap { max-width: 420px; margin: 48px auto 0; }
+  .login-card {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(160deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .04));
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 20px;
+    padding: 28px 26px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .15);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .login-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(115deg, transparent 20%, rgba(56, 189, 248, .14) 38%, rgba(255, 255, 255, .10) 50%, rgba(37, 99, 235, .12) 62%, transparent 80%);
+    pointer-events: none;
+  }
+  .login-card > * { position: relative; z-index: 1; }
+  .login-card h2 { border-bottom: none; margin-top: 0; padding-bottom: 0; font-size: 24px; }
+  .login-sub { color: var(--muted); font-size: 14px; margin: 6px 0 20px; }
+  .login-field { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .login-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .06);
+    border: 1px solid rgba(255, 255, 255, .14);
+  }
+  .login-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 12px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #38bdf8, #2563eb);
+    box-shadow: 0 4px 24px rgba(37, 99, 235, .45);
+  }
+  .login-foot { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+  .login-ghost { background: transparent; border: 1px solid var(--border); box-shadow: none; }
+  #loginState { font-size: 13px; color: var(--muted); }
+  .login-note { color: var(--muted); font-size: 12px; margin: 16px 0 0; }
   @media (prefers-reduced-motion: reduce) {
     .card { animation: none; transition: none; }
     button, input, textarea { transition: none; }
@@ -146,13 +194,19 @@
 
 <div id="health" class="card">Memuat status…</div>
 
-<h2>Login admin</h2>
-<div class="card">
-  <p>Masukkan <code>ADMIN_KEY</code> (disimpan hanya di sessionStorage tab ini, hilang saat tab ditutup).</p>
-  <input id="adminKey" type="password" placeholder="ADMIN_KEY" size="40">
-  <button id="loginBtn">Login</button>
-  <button id="logoutBtn">Logout</button>
-  <span id="loginState"></span>
+<div class="login-wrap">
+<div class="login-card">
+  <h2>Welcome Back</h2>
+  <p class="login-sub">Masukkan admin key untuk mengakses dashboard.</p>
+  <label class="login-field" for="adminKey">Admin Key</label>
+  <input id="adminKey" class="login-input" type="password" placeholder="••••••••">
+  <button id="loginBtn" class="login-btn">Sign In →</button>
+  <div class="login-foot">
+    <button id="logoutBtn" class="login-ghost">Logout</button>
+    <span id="loginState"></span>
+  </div>
+  <p class="login-note">Admin key disimpan hanya di sessionStorage tab ini, hilang saat tab ditutup.</p>
+</div>
 </div>
 
 <div id="adminArea" style="display:none">
