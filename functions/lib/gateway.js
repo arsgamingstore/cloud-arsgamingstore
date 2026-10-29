@@ -366,7 +366,7 @@ export async function createGatewayKey(env, input, opts = {}) {
     upstream = { baseUrl, apiKey, models };
   }
   const id = randomHex(6);
-  const rawKey = `ca-${randomHex(16)}`;
+  const rawKey = `ars-${randomHex(16)}`;
   const hash = await sha256Hex(rawKey);
   const record = {
     id,

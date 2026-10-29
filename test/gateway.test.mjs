@@ -57,7 +57,7 @@ function jsonResp(obj, status = 200) {
 
 async function makeGatewayKey(env) {
   const r = await createGatewayKey(env, { name: "test", quota_tokens: 1000 });
-  assert.ok(r.created.key.startsWith("ca-"));
+  assert.ok(r.created.key.startsWith("ars-"));
   return r.created.key;
 }
 
