@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ArsRouter Proxy — Dashboard</title>
+<link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+<div id="health" class="card">Memuat status…</div>
+<div class="dash">
+<aside class="side">
+  <div class="side-brand">ArsRouter Proxy</div>
+  <div class="side-tag">Admin dashboard</div>
+  <nav>
+    <a href="#sec-overview">Overview</a>
+    <a href="#sec-keys">API Key</a>
+    <a href="#sec-providers">Provider</a>
+    <a href="#sec-chat">Tes Chat</a>
+    <a href="/">← Beranda</a>
+  </nav>
+  <p><button id="logoutBtn" class="login-ghost">Logout</button></p>
+</aside>
+<main class="dash-main">
+  <section id="sec-overview">
+    <h2>Overview</h2>
+    <div class="stats">
+      <div class="stat"><span>Total Key</span><b id="statKeys">…</b><small>key gateway aktif</small></div>
+      <div class="stat"><span>Token Terpakai</span><b id="statTokens">…</b><small>terpakai / total kuota</small></div>
+      <div class="stat"><span>Provider</span><b id="statProviders">…</b><small>provider terkonfigurasi</small></div>
+      <div class="stat"><span>Model</span><b id="statModels">…</b><small>model tersedia</small></div>
+    </div>
+    <div class="card">
+      <div style="font-weight:600;margin-bottom:12px">Pemakaian Token</div>
+      <div class="donut-wrap">
+        <svg width="96" height="96" viewBox="0 0 96 96">
+          <circle cx="48" cy="48" r="34" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="10"/>
+          <circle id="usageDonutArc" cx="48" cy="48" r="34" fill="none" stroke="#38bdf8" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 213.63"/>
+        </svg>
+        <div><div id="usageDonutPct" style="font-size:24px;font-weight:700">…</div><div id="usageDonutSub" style="color:var(--muted);font-size:13px">Memuat…</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-keys">
+    <h2>API key gateway</h2>
+    <div class="card">
+      <input id="keyName" placeholder="Nama key (mis. main)" size="24">
+      <input id="keyQuota" type="number" placeholder="Kuota token/bulan" value="1000000" min="1" style="width:170px">
+      <button id="createKeyBtn">Buat key</button>
+      <div id="newKey" style="margin-top:10px"></div>
+    </div>
+    <div class="card">
+      <table>
+        <thead><tr><th>Nama</th><th>ID</th><th>Pakai / Kuota</th><th>Periode</th><th>Tipe</th><th></th></tr></thead>
+        <tbody id="keysBody"></tbody>
+      </table>
+      <p id="totals"></p>
+    </div>
+  </section>
+
+  <section id="sec-providers">
+    <h2>Provider</h2>
+    <div class="card" id="providers"></div>
+  </section>
+
+  <section id="sec-chat">
+    <h2>Tes chat (pakai gateway key, bukan admin key)</h2>
+    <div class="card">
+      <input id="gwKey" placeholder="Gateway key (ca-…)" size="40">
+      <input id="chatModel" placeholder="Model (mis. zai-org/GLM-5.3-Flash)" size="34">
+      <textarea id="chatMsg" placeholder="Pesan…">Halo, jawab singkat: apa itu ArsRouter Proxy?</textarea>
+      <p><button id="chatBtn">Kirim</button></p>
+      <div id="chatOut" class="mono"></div>
+    </div>
+  </section>
+</main>
+</div>
+<div class="warn"><b>Keamanan:</b> key provider tidak pernah tampil di dashboard ini.
+Key provider hanya ada di Pages Secrets. Key gateway mentah hanya ditampilkan sekali saat dibuat — simpan baik-baik.</div>
+<script>
+const $ = (id) => document.getElementById(id);
+const adminHeaders = () => ({ "Authorization": "Bearer " + (sessionStorage.getItem("ca_admin") || ""), "Content-Type": "application/json" });
+
+// Data terakhir untuk kartu statistik Overview (health = publik, usage = butuh login).
+let healthData = null;
+let usageTotals = null;
+function renderStats() {
+  if ($("statKeys")) $("statKeys").textContent = usageTotals ? usageTotals.keys : "…";
+  if ($("statTokens")) $("statTokens").textContent = usageTotals ? `${usageTotals.used_tokens.toLocaleString()} / ${usageTotals.quota_tokens.toLocaleString()}` : "…";
+  if ($("statProviders")) $("statProviders").textContent = healthData ? healthData.providers : "…";
+  if ($("statModels")) $("statModels").textContent = healthData ? healthData.models : "…";
+  if (usageTotals && usageTotals.quota_tokens > 0) {
+    const pct = Math.min(100, Math.round(usageTotals.used_tokens / usageTotals.quota_tokens * 100));
+    const arc = $("usageDonutArc");
+    if (arc) arc.setAttribute("stroke-dasharray", `${(pct / 100 * 213.63).toFixed(1)} 213.63`);
+    if ($("usageDonutPct")) $("usageDonutPct").textContent = pct + "%";
+    if ($("usageDonutSub")) $("usageDonutSub").textContent = "token terpakai dari total kuota";
+  }
+}
+
+async function loadHealth() {
+  try {
+    const r = await fetch("/api/health");
+    const h = await r.json();
+    $("health").innerHTML =
+      `Status: <b class="ok">${h.status}</b> · KV: ${h.kv_bound ? '<span class="ok">terhubung</span>' : '<span class="bad">BELUM di-bind</span>'} · ` +
+      `Admin: ${h.admin_configured ? '<span class="ok">terkonfigurasi</span>' : '<span class="bad">ADMIN_KEY belum diset</span>'} · ` +
+      `Provider: ${h.providers} · Model: ${h.models}` +
+      (h.kv_bound ? "" : "<p>Bind KV namespace sebagai <code>GATEWAY_KV</code> di Pages → Settings → Functions → KV namespace bindings, lalu redeploy.</p>");
+    healthData = h;
+    renderStats();
+  } catch (e) {
+    $("health").innerHTML = '<span class="bad">Gagal memuat /api/health: ' + e.message + "</span>";
+  }
+}
+
+async function loadUsage() {
+  try {
+    const r = await fetch("/api/admin/usage", { headers: adminHeaders() });
+    const u = await r.json();
+    if (!r.ok) { $("keysBody").innerHTML = `<tr><td colspan="6">${u.error?.message || r.status}</td></tr>`; return; }
+    $("keysBody").innerHTML = u.keys.map(k => `<tr>
+      <td>${k.name}</td><td class="mono">${k.id}</td>
+      <td>${k.used_tokens.toLocaleString()} / ${k.quota_tokens.toLocaleString()}<div class="ubar"><i style="width:${k.quota_tokens > 0 ? Math.min(100, Math.round(k.used_tokens / k.quota_tokens * 100)) : 0}%"></i></div></td>
+      <td>${k.period}</td>
+      <td>${k.quota_type === "package" ? "Paket" : "Bulanan"}${k.has_upstream ? " · hybrid" : ""}</td>
+      <td><button class="danger" data-del="${k.id}">Hapus</button></td></tr>`).join("") || '<tr><td colspan="6">Belum ada key.</td></tr>';
+    document.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
+      if (!confirm("Hapus key ini? Key yang sudah dihapus tidak bisa dipakai lagi.")) return;
+      await fetch("/api/admin/keys/" + b.dataset.del, { method: "DELETE", headers: adminHeaders() });
+      loadUsage();
+    });
+    $("totals").textContent = `Total: ${u.totals.keys} key · ${u.totals.used_tokens.toLocaleString()} / ${u.totals.quota_tokens.toLocaleString()} token.`;
+    usageTotals = u.totals;
+    renderStats();
+    $("providers").innerHTML = u.providers.length
+      ? u.providers.map(p => `<p>${p.name}: ${p.models} model</p>`).join("")
+      : "<p>Belum ada provider terkonfigurasi. Set PROVIDER_1_* di Pages Secrets.</p>";
+  } catch (e) {
+    $("keysBody").innerHTML = `<tr><td colspan="6">Error: ${e.message}</td></tr>`;
+  }
+}
+
+$("createKeyBtn").onclick = async () => {
+  const name = $("keyName").value.trim();
+  const quota = parseInt($("keyQuota").value, 10);
+  if (!name) { alert("Isi nama key dulu."); return; }
+  const r = await fetch("/api/admin/keys", { method: "POST", headers: adminHeaders(), body: JSON.stringify({ name, quota_tokens: quota }) });
+  const d = await r.json();
+  if (!r.ok) { $("newKey").innerHTML = '<span class="bad">' + (d.error?.message || r.status) + "</span>"; return; }
+  $("newKey").innerHTML = 'Key baru (hanya tampil sekali, simpan sekarang): <code>' + d.key + "</code>";
+  $("keyName").value = "";
+  loadUsage();
+};
+
+$("chatBtn").onclick = async () => {
+  const key = $("gwKey").value.trim();
+  const model = $("chatModel").value.trim();
+  const msg = $("chatMsg").value.trim();
+  if (!key || !model || !msg) { alert("Isi gateway key, model, dan pesan."); return; }
+  $("chatOut").textContent = "Mengirim…";
+  try {
+    const r = await fetch("/v1/chat/completions", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
+      body: JSON.stringify({ model, messages: [{ role: "user", content: msg }] }),
+    });
+    const d = await r.json();
+    $("chatOut").textContent = r.ok
+      ? (d.choices?.[0]?.message?.content || JSON.stringify(d, null, 2)) + "\n\nUsage: " + JSON.stringify(d.usage || {})
+      : "Error " + r.status + ": " + JSON.stringify(d, null, 2);
+  } catch (e) {
+    $("chatOut").textContent = "Error: " + e.message;
+  }
+};
+
+$("logoutBtn").onclick = () => { sessionStorage.removeItem("ca_admin"); location.href = "/admin/"; };
+// Gerbang: dashboard hanya untuk sesi login; sisanya kembali ke /admin/.
+// (Proteksi sebenarnya tetap ADMIN_KEY di API — ini hanya routing halaman.)
+if (!sessionStorage.getItem("ca_admin")) {
+  location.href = "/admin/";
+} else {
+  loadHealth();
+  loadUsage();
+}
+</script>
+</body>
+</html>
