@@ -117,7 +117,6 @@
     color: var(--lime); background: none;
     -webkit-background-clip: initial; background-clip: initial;
   }
-  .nav-logo { height: 30px; width: auto; display: block; }
   .nav-links { display: flex; gap: 18px; }
   .nav-links a { color: var(--muted); text-decoration: none; font-family: ui-monospace, monospace; font-size: 13px; white-space: nowrap; }
   .nav-links a:hover { color: var(--text); }
@@ -151,7 +150,7 @@
      Admin tinggal di /admin/ dan tidak di-link dari halaman ini.
      Navbar di bawah juga tidak punya tombol Login / ikon search. -->
 <nav class="navbar">
-  <a class="nav-brand" href="#top" data-view="all"><img src="/logo-lime.png" class="nav-logo" alt="ArsRouter Proxy"></a>
+  <a class="nav-brand" href="#top" data-view="all"><span class="b-full">ArsRouter Proxy</span><span class="b-short">ArsRouter</span></a>
   <span class="nav-links">
     <a href="#uncen" data-view="uncen">Uncen</a>
     <a href="#standar" data-view="standar">Standar</a>
