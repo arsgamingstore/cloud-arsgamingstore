@@ -158,7 +158,7 @@
 <p class="hero-sub">Satu endpoint OpenAI-compatible, order lewat bot models uncensored.</p>
 <div class="card mono term"><span class="lm">$</span> curl https://cloud-arsgamingstore.pages.dev/v1/chat/completions -H "Authorization: Bearer ars-…"</div>
 <div class="stats">
-  <span class="cell"><small>PROVIDER</small><b id="statProviders">–</b></span>
+  <span class="cell"><small>PRICE FLOOR</small><b>$0.040/1M token</b></span>
   <span class="cell"><small>MODEL STANDAR</small><b id="statModels">–</b></span>
   <span class="cell"><small>MODEL UNCENSORED</small><b>2</b></span>
 </div>
@@ -219,13 +219,13 @@ async function loadModels() {
   }
 }
 loadModels();
-// Bar statistik hero dari endpoint publik /api/health (jumlah provider +
-// model standar). Gagal fetch = tetap "–", tidak pernah angka karangan.
+// Bar statistik hero: MODEL STANDAR live dari endpoint publik /api/health
+// (gagal fetch = tetap "–", tidak pernah angka karangan); PRICE FLOOR
+// statis sesuai copy user, MODEL UNCENSORED statis (sinkron HYBRID_MODELS).
 async function loadStats() {
   try {
     const r = await fetch("/api/health");
     const d = await r.json();
-    if (typeof d.providers === "number") document.getElementById("statProviders").textContent = d.providers;
     if (typeof d.models === "number") document.getElementById("statModels").textContent = d.models;
   } catch (e) { /* tetap "–" */ }
 }
