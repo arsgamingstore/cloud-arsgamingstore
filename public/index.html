@@ -6,11 +6,11 @@
 <title>ArsRouter Proxy</title>
 <style>
   :root {
-    --bg: #070812;
+    --bg: #0a0a0a;
     --glass: rgba(255, 255, 255, .06);
-    --border: rgba(255, 255, 255, .12);
-    --text: #eef1ff;
-    --muted: #9aa3c7;
+    --border: rgba(255, 255, 255, .14);
+    --text: #ececec;
+    --muted: #8f8f8f;
     --violet: #8b7bff;
     --cyan: #22d3ee;
   }
@@ -19,12 +19,7 @@
     color: var(--text);
     margin: 0;
     padding: 76px 24px 24px;
-    background:
-      radial-gradient(600px 400px at 15% -5%, rgba(139, 123, 255, .28), transparent 60%),
-      radial-gradient(700px 500px at 90% 10%, rgba(34, 211, 238, .16), transparent 60%),
-      radial-gradient(500px 500px at 50% 110%, rgba(139, 123, 255, .12), transparent 60%),
-      var(--bg);
-    background-attachment: fixed;
+    background: var(--bg);
   }
   h1 {
     font-size: 26px;
@@ -51,25 +46,14 @@
   }
   a { color: #a5b4fc; }
   .card {
-    background: linear-gradient(160deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .03));
+    background: rgba(255, 255, 255, .03);
     border: 1px solid var(--border);
-    border-radius: 16px;
+    border-radius: 10px;
     padding: 16px;
     margin-top: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, .35);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    animation: fadeUp .5s ease both;
-    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
   }
   .card:hover {
-    transform: translateY(-2px);
-    border-color: rgba(167, 139, 250, .5);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, .45), 0 0 24px rgba(139, 123, 255, .15);
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    border-color: rgba(255, 255, 255, .32);
   }
   code {
     background: rgba(255, 255, 255, .08);
@@ -80,6 +64,16 @@
   }
   .mono { font-family: ui-monospace, monospace; }
   .bad { color: #fb7185; }
+  /* Hero ala ModelRanker (rekreasi, bukan jiplakan): tag mono, headline
+     tebal, snippet terminal, bar statistik dari endpoint publik. */
+  .tag { font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted); letter-spacing: .08em; }
+  .hero-head { font-size: 30px; line-height: 1.15; font-weight: 800; letter-spacing: -.01em; margin: 18px 0 8px; max-width: 640px; }
+  .hero-sub { color: var(--muted); max-width: 640px; line-height: 1.6; }
+  .term { overflow-x: auto; white-space: nowrap; font-size: 13px; color: #d4d4d4; }
+  .stats { display: flex; flex-wrap: wrap; gap: 8px 24px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 12px 0; margin: 20px 0 8px; font-family: ui-monospace, monospace; font-size: 13px; color: var(--muted); }
+  .stats b { color: var(--text); font-weight: 600; }
+  .sec-tag { font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted); letter-spacing: .08em; margin: 32px 0 2px; }
+  .sec-tag + h2 { margin-top: 0; }
   /* Navbar ala Apple-style (rekreasi CSS vanilla): pill kaca melayang,
      fixed di atas, membesar halus saat hover. Brand teks (bukan video
      logo — video logo ber-background hitam, akan jadi kotak hitam di
@@ -116,7 +110,7 @@
   .b-short { display: none; }
   h2 { scroll-margin-top: 80px; }
   @media (max-width: 560px) {
-    .navbar { gap: 12px; padding: 8px 12px; overflow-x: auto; scrollbar-width: none; }
+    .hero-head { font-size: 23px; }
     .navbar::-webkit-scrollbar { display: none; }
     .nav-links { gap: 10px; }
     .nav-links a { font-size: 13px; }
@@ -143,10 +137,15 @@
   </span>
   <a class="nav-cta" href="https://t.me/ArsapikeyBot"><span class="b-full">Beli via Bot</span><span class="b-short">Beli</span></a>
 </nav>
+<p class="tag">[ v1 ] · Gateway AI Workers-native</p>
 <div class="brand" id="top"><video src="/logo.mp4" autoplay loop muted playsinline class="logo" aria-label="ArsRouter Proxy"></video><h1>ArsRouter Proxy</h1></div>
-<p>Gateway AI Workers-native: satu endpoint OpenAI-compatible di depan banyak provider.</p>
+<p class="hero-head">Model uncensored, satu endpoint.</p>
+<p class="hero-sub">Satu endpoint OpenAI-compatible di depan banyak provider. Key <code>ars-…</code> dari gateway ini, bayar lewat bot, tanpa sensor.</p>
+<div class="card mono term">$ curl https://cloud-arsgamingstore.pages.dev/v1/chat/completions -H "Authorization: Bearer ars-…"</div>
+<div class="stats"><span>Provider <b id="statProviders">–</b></span><span>Model standar <b id="statModels">–</b></span><span>Model uncensored <b>2</b></span></div>
 
 <div id="view-uncen">
+<p class="sec-tag">[ 01 ]</p>
 <h2 id="uncen">Model Uncensored</h2>
 <p>Model tanpa sensor, dijual lewat bot Telegram. Key-nya key <code>ars-…</code> dari gateway ini.</p>
 <!-- Daftar ini HARUS sama dengan HYBRID_MODELS di ars-reseller-bot/src/lib/bot.js.
@@ -157,6 +156,7 @@
 </div>
 
 <div id="view-standar">
+<p class="sec-tag">[ 02 ]</p>
 <h2 id="standar">Model Standar</h2>
 <p>Model standar lewat provider gateway. Daftar di bawah diambil live dari gateway.</p>
 <div id="stdModels">Memuat daftar model…</div>
@@ -164,6 +164,7 @@
 </div>
 
 <div id="view-cara">
+<p class="sec-tag">[ 03 ]</p>
 <h2 id="cara">Cara pakai</h2>
 <div class="card">
   <p>1. Dapat key (<code>ars-…</code>) dari bot atau admin.<br>
@@ -189,6 +190,17 @@ async function loadModels() {
   }
 }
 loadModels();
+// Bar statistik hero dari endpoint publik /api/health (jumlah provider +
+// model standar). Gagal fetch = tetap "–", tidak pernah angka karangan.
+async function loadStats() {
+  try {
+    const r = await fetch("/api/health");
+    const d = await r.json();
+    if (typeof d.providers === "number") document.getElementById("statProviders").textContent = d.providers;
+    if (typeof d.models === "number") document.getElementById("statModels").textContent = d.models;
+  } catch (e) { /* tetap "–" */ }
+}
+loadStats();
 // Navbar jadi pemindah tampilan (seperti dashboard): klik section tampil
 // sendiri, sisanya sembunyi; klik brand tampilkan semua lagi + ke atas.
 // Tanpa JS, href anchor tetap jalan (scroll ke section).
