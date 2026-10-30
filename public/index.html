@@ -184,9 +184,8 @@
 <div id="view-standar">
 <p class="sec-tag"><span class="lm">[</span> 02 <span class="lm">]</span></p>
 <h2 id="standar">Model Standar</h2>
-<p>Model standar lewat provider gateway. Daftar di bawah diambil live dari gateway.</p>
+<!-- Daftar di bawah diambil live dari /v1/models; deskripsi dari STD_DESC. -->
 <div id="stdModels">Memuat daftar model…</div>
-<p>Key standar dibuat admin — hubungi <a href="https://t.me/arsgamingstore">@arsgamingstore</a>.</p>
 </div>
 
 <div id="view-cara">
@@ -212,6 +211,15 @@
 
 <script>
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// Deskripsi model standar (dari riset 2026-10-30: kartu model NVIDIA,
+// dokumentasi Z.ai/Cloudflare, dan kartu DeepSeek). Model baru yang belum
+// ada di peta ini tetap tampil sebagai baris biasa tanpa deskripsi.
+const STD_DESC = {
+  "deepseek-ai/DeepSeek-V4.1-Flash": "DeepSeek's efficient multimodal model for long-context agents, coding, and reasoning, with text and image input, tool calling, and a context window of up to 1M tokens.",
+  "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-NVFP4": "NVIDIA's open vision-language model for reasoning, coding, tool use, and document and video understanding, with text, image, and video input and a context window of up to 1M tokens.",
+  "zai-org/GLM-5.3-Flash": "Z.ai's cost-efficient, natively multimodal model for coding and agentic work, with text, image, video, and file input and a context window of up to 1M tokens.",
+  "GLM-5.3": "Z.ai's flagship agentic coding model for complex software engineering and long-horizon tasks, with reasoning, function calling, and a context window of up to 1M tokens.",
+};
 async function loadModels() {
   const el = document.getElementById("stdModels");
   try {
@@ -219,7 +227,12 @@ async function loadModels() {
     const d = await r.json();
     const models = d.data || [];
     el.innerHTML = models.length
-      ? models.map((m) => `<div class="mrow"><span>${esc(m.id)}</span><span class="pill pill-blue">STANDAR</span></div>`).join("")
+      ? models.map((m) => {
+          const desc = STD_DESC[m.id];
+          return desc
+            ? `<div class="mrow mrow-desc"><div class="mhead"><span>${esc(m.id)}</span><span class="pill pill-blue">STANDAR</span></div><p class="mdesc">${esc(desc)}</p></div>`
+            : `<div class="mrow"><span>${esc(m.id)}</span><span class="pill pill-blue">STANDAR</span></div>`;
+        }).join("")
       : "<p>Belum ada model standar terkonfigurasi.</p>";
   } catch (e) {
     el.innerHTML = '<span class="bad">Gagal memuat daftar model: ' + esc(e.message) + "</span>";
