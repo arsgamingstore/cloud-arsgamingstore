@@ -244,11 +244,10 @@ export async function handleChatCompletions(request, env, fetchImpl = fetch) {
       continue; // failover to next provider
     }
     if (!upstream.ok) {
-      // Client error from provider: pass through as-is, no failover.
-      return new Response(upstream.body, {
-        status: upstream.status,
-        headers: { "Content-Type": upstream.headers.get("Content-Type") || "application/json" },
-      });
+      // Client error from provider: no failover, and never pass the
+      // upstream body through (it may carry provider-internal detail).
+      // Status is preserved so clients can still tell 400 from 404.
+      return withCors(err("provider_error", "Provider returned an error.", upstream.status));
     }
     if (!stream) {
       const data = await upstream.json();
